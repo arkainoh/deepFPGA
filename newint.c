@@ -14,56 +14,69 @@ double W4[HL_SIZE + 1][HL_SIZE];
 double W5[HL_SIZE + 1][OUTPUT_LENGTH];
 
 
+int saveToken() {
+	
+	return 0;
+}
 
-int loadW() {
-
+void loadW() {
+	puts("loadW()");
 	char line[BUFFER_SIZE];
 	FILE *f;
 	f = fopen("test.w", "r");
 	
-	char token[TOKEN_LENGTH];
+	char static token[TOKEN_LENGTH];
 	int token_cursor = 0;
 
-	int row = 0;
-	int col = 0;
+	//int row = 0;
+	//int col = 0;
+
+	fgets(line, sizeof(line), f);
+	printf("First row: %s\n", line);
 
 	while(fgets(line, sizeof(line), f)) {
+		puts("reading line...");
 		puts(line);
 		printf("read length: %d\n", strlen(line));
-		int on = 1;
-
-		//read token
+		puts("");
+		puts("tokens:");
+		int off = 0;
+		// read token
 		for(int i = 0; i < BUFFER_SIZE; i++) {
-			if (on) {
-				switch(line[i]) {
-				case ' ':
+			if(off) break;
+			switch(line[i]) {
+			case ' ':
+				// save token
+				token[token_cursor] = '\0';
+				token_cursor = 0;
+				puts(token);
+			break;
+
+			case '\n':
+			case '\0':
+				if ((token_cursor == 24 && token[0] != '-') || (token_cursor == 25 && token[0] == '-')) {
 					// save token
-					
-					token_cursor = 0; // reset cursor
-				break;
-
-				case '\n':
-					if (token_cursor == 24 || token_cursor == 25) {
-						
-					}
-
-				break;
-
-				case '\0':
-					// save token
-					on = 0;
-				break;
-
-				default:
-					token[token_cusor++] = line[i];
-				break;
+					token[token_cursor] = '\0';
+					token_cursor = 0;
+					puts(token);
 				}
+
+				if (line[i] == '\0') {
+					off = 1;
+					puts("end of the line");
+					printf("i: %d, token_cursor: %d, off: %d\n", i, token_cursor, off);
+				}
+			break;
+
+			default:
+				token[token_cursor++] = line[i];
+			break;
 			}
 		}
 
-		puts("===============================+");
+		puts("===============================");
 	}
-
+	fclose(f);
 }
 
 int main() {
