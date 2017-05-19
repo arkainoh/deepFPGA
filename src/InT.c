@@ -58,8 +58,11 @@ int passOL(int x[HL_LENGTH], int w[HL_LENGTH][OUTPUT_LENGTH], int b[OUTPUT_LENGT
 	for(int m = 0; m < HL_LENGTH; m++) // row-wise matmul
 		for(int n = 0; n < OUTPUT_LENGTH; n++) result[n] += (x[m] * w[m][n]);
 
-	for(int n = 0; n < OUTPUT_LENGTH; n++) // reLU
-		if(result[n] < 0) result[n] = 0;
+	int max = result[0];
+	for(int n = 1; n < OUTPUT_LENGTH; n++) // get max value (softmax part)
+		if(result[n] > max) max = result[n];
+
+	return max;
 
 }
 
