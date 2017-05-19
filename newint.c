@@ -7,33 +7,37 @@
 #define BUFFER_SIZE 1024
 
 double X[INPUT_LENGTH + 1];
-double W1[INPUT_LENGTH + 1][HL_SIZE];
-double W2[HL_SIZE + 1][HL_SIZE];
-double W3[HL_SIZE + 1][HL_SIZE];
-double W4[HL_SIZE + 1][HL_SIZE];
-double W5[HL_SIZE + 1][OUTPUT_LENGTH];
-
-
-int saveToken() {
-	
+double W1[INPUT_LENGTH][HL_SIZE];
+double W2[HL_SIZE][HL_SIZE];
+double W3[HL_SIZE][HL_SIZE];
+double W4[HL_SIZE][HL_SIZE];
+double W5[HL_SIZE][OUTPUT_LENGTH];
+long double test[10][1024];
+/*
+int saveToken(char* token, int idx) {
+	printf("token: ");
+	long double val;
+	sscanf(token, "%Lf", &val);
+	printf("%.12Lf\n", val);
+	test[idx] = val;
 	return 0;
 }
+*/
 
-void loadW() {
-	puts("loadW()");
+void loadW(char* filename, long double mat[][]) {
 	char line[BUFFER_SIZE];
 	FILE *f;
-	f = fopen("test.w", "r");
+	f = fopen(filename, "r");
 	
 	char static token[TOKEN_LENGTH];
 	int token_cursor = 0;
-
-	//int row = 0;
-	//int col = 0;
-
+	int token_cnt = 0;
+	int rows;
+	int cols;
 	fgets(line, sizeof(line), f);
 	printf("First row: %s\n", line);
-
+	sscanf(line, "%d %d", &rows, &cols);
+	printf("(%d, %d)\n", rows, cols);
 	while(fgets(line, sizeof(line), f)) {
 		puts("reading line...");
 		puts(line);
@@ -41,6 +45,7 @@ void loadW() {
 		puts("");
 		puts("tokens:");
 		int off = 0;
+
 		// read token
 		for(int i = 0; i < BUFFER_SIZE; i++) {
 			if(off) break;
@@ -50,6 +55,7 @@ void loadW() {
 				token[token_cursor] = '\0';
 				token_cursor = 0;
 				puts(token);
+				// saveToken(token, token_cnt++);
 			break;
 
 			case '\n':
@@ -59,11 +65,11 @@ void loadW() {
 					token[token_cursor] = '\0';
 					token_cursor = 0;
 					puts(token);
+					// saveToken(token, token_cnt++);
 				}
 
 				if (line[i] == '\0') {
 					off = 1;
-					puts("end of the line");
 					printf("i: %d, token_cursor: %d, off: %d\n", i, token_cursor, off);
 				}
 			break;
@@ -81,6 +87,11 @@ void loadW() {
 
 int main() {
 
-	loadW();
+	loadW("test.w", test);
+	puts("print W1...");
+	for (int i = 0 ; i < 1024; i++) {
+		//printf("%.12Lf ", test[i]);		
+	}
+	puts("");
 	return 0;
 }
