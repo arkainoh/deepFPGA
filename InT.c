@@ -3,10 +3,10 @@
 #define INPUT_LENGTH 784
 #define HL_LENGTH 512
 #define OUTPUT_LENGTH 10
-#define TOKEN_LENGTH 25 // pos num: 24, neg num: 25
+#define TOKEN_LENGTH 24 // pos num: 24, neg num: 25
 #define BUFFER_SIZE 1024
 
-long double X[INPUT_LENGTH + 1];
+long double X[INPUT_LENGTH];
 
 long double W1[INPUT_LENGTH][HL_LENGTH];
 long double W2[HL_LENGTH][HL_LENGTH];
@@ -20,18 +20,13 @@ long double B3[HL_LENGTH];
 long double B4[HL_LENGTH];
 long double B5[OUTPUT_LENGTH];
 
+long double test[3][3];
 
-long double test[10][1024];
-/*
-int saveToken(char* token, int idx) {
-	printf("token: ");
+long double evalToken(char* token) {
 	long double val;
 	sscanf(token, "%Lf", &val);
-	printf("%.12Lf\n", val);
-	test[idx] = val;
-	return 0;
+	return val;
 }
-*/
 
 void passIL(int x[INPUT_LENGTH], int w[INPUT_LENGTH][HL_LENGTH], int b[HL_LENGTH], int result[HL_LENGTH]) {
 	
@@ -68,12 +63,13 @@ void passOL(int x[HL_LENGTH], int w[HL_LENGTH][OUTPUT_LENGTH], int b[OUTPUT_LENG
 
 }
 
-void loadW(char* filename, long double mat[][]) {
+void loadW(char* filename, long double* mat) {
 	char line[BUFFER_SIZE];
 	FILE *f;
 	f = fopen(filename, "r");
 	
-	char static token[TOKEN_LENGTH];
+	static char token[TOKEN_LENGTH];
+	static long double* ptr = 0;
 	int token_cursor = 0;
 	int token_cnt = 0;
 	int rows;
@@ -93,18 +89,20 @@ void loadW(char* filename, long double mat[][]) {
 				// save token
 				token[token_cursor] = '\0';
 				token_cursor = 0;
+				*(mat + token_cnt) = evalToken(token);
+				token_cnt++;
 				puts(token);
-				// saveToken(token, token_cnt++);
 			break;
 
 			case '\n':
 			case '\0':
-				if ((token_cursor == 24 && token[0] != '-') || (token_cursor == 25 && token[0] == '-')) {
+				if ((token_cursor == TOKEN_LENGTH && token[0] != '-') || (token_cursor == TOKEN_LENGTH + 1 && token[0] == '-')) {
 					// save token
 					token[token_cursor] = '\0';
 					token_cursor = 0;
+					*(mat + token_cnt) = evalToken(token);
+					token_cnt++;
 					puts(token);
-					// saveToken(token, token_cnt++);
 				}
 
 				if (line[i] == '\0') {
@@ -125,12 +123,14 @@ void loadW(char* filename, long double mat[][]) {
 }
 
 int main() {
-
-	loadW("test.w", test);
-	puts("print W1...");
-	for (int i = 0 ; i < 1024; i++) {
-		//printf("%.12Lf ", test[i]);		
+	
+	loadW("test.w", (long double*) test);
+	puts("print test...");
+	for (int i = 0 ; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			printf("%.12Lf ", test[i][j]);
+		}
+		puts("");
 	}
-	puts("");
 	return 0;
 }
