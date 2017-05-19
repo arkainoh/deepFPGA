@@ -51,7 +51,7 @@ void passHL(int x[HL_LENGTH], int w[HL_LENGTH][HL_LENGTH], int b[HL_LENGTH], int
 
 }
 
-void passOL(int x[HL_LENGTH], int w[HL_LENGTH][OUTPUT_LENGTH], int b[OUTPUT_LENGTH], int result[OUTPUT_LENGTH]) {
+int passOL(int x[HL_LENGTH], int w[HL_LENGTH][OUTPUT_LENGTH], int b[OUTPUT_LENGTH], int result[OUTPUT_LENGTH]) {
 	
 	for(int n = 0; n < OUTPUT_LENGTH; n++) result[n] = b[n]; // copy b to result
 	
@@ -63,7 +63,7 @@ void passOL(int x[HL_LENGTH], int w[HL_LENGTH][OUTPUT_LENGTH], int b[OUTPUT_LENG
 
 }
 
-void loadW(char* filename, long double* mat) {
+void loadParam(char* filename, long double* mat) {
 	char line[BUFFER_SIZE];
 	FILE *f;
 	
@@ -119,7 +119,18 @@ void loadW(char* filename, long double* mat) {
 
 int main() {
 
-	loadW("../model/W1.w", (long double*) W1);
+	loadParam("../model/w1.param", (long double*) W1);
+	loadParam("../model/w2.param", (long double*) W2);
+	loadParam("../model/w3.param", (long double*) W3);
+	loadParam("../model/w4.param", (long double*) W4);
+	loadParam("../model/w5.param", (long double*) W5);
+
+	loadParam("../model/b1.param", (long double*) B1);
+	loadParam("../model/b2.param", (long double*) B2);
+	loadParam("../model/b3.param", (long double*) B3);
+	loadParam("../model/b4.param", (long double*) B4);
+	loadParam("../model/b5.param", (long double*) B5);
+
 	puts("print W1...");
 	for (int i = 0 ; i < 10; i++) {
 		for (int j = 0; j < 10; j++) {
