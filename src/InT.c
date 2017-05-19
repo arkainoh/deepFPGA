@@ -66,7 +66,6 @@ void passOL(int x[HL_LENGTH], int w[HL_LENGTH][OUTPUT_LENGTH], int b[OUTPUT_LENG
 void loadW(char* filename, long double* mat) {
 	char line[BUFFER_SIZE];
 	FILE *f;
-	f = fopen(filename, "r");
 	
 	static char token[TOKEN_LENGTH];
 	static long double* ptr = 0;
@@ -74,11 +73,12 @@ void loadW(char* filename, long double* mat) {
 	int token_cnt = 0;
 	int rows;
 	int cols;
+	
+	f = fopen(filename, "r");
 	fgets(line, sizeof(line), f);
 	sscanf(line, "%d %d", &rows, &cols);
-	printf("(%d, %d)\n", rows, cols);
+	
 	while(fgets(line, sizeof(line), f)) {
-		puts("tokens:");
 		int off = 0;
 
 		// read token
@@ -91,24 +91,20 @@ void loadW(char* filename, long double* mat) {
 				token_cursor = 0;
 				*(mat + token_cnt) = evalToken(token);
 				token_cnt++;
-				puts(token);
 			break;
 
 			case '\n':
 			case '\0':
-				if ((token_cursor == TOKEN_LENGTH && token[0] != '-') || (token_cursor == TOKEN_LENGTH + 1 && token[0] == '-')) {
+				if((token_cursor == TOKEN_LENGTH && token[0] != '-') ||
+						(token_cursor == TOKEN_LENGTH + 1 && token[0] == '-')) {
 					// save token
 					token[token_cursor] = '\0';
 					token_cursor = 0;
 					*(mat + token_cnt) = evalToken(token);
 					token_cnt++;
-					puts(token);
 				}
 
-				if (line[i] == '\0') {
-					off = 1;
-					printf("i: %d, token_cursor: %d, off: %d\n", i, token_cursor, off);
-				}
+				if(line[i] == '\0') off = 1;
 			break;
 
 			default:
@@ -116,19 +112,18 @@ void loadW(char* filename, long double* mat) {
 			break;
 			}
 		}
-
-		puts("===============================");
 	}
+
 	fclose(f);
 }
 
 int main() {
-	
-	loadW("test.w", (long double*) test);
-	puts("print test...");
-	for (int i = 0 ; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			printf("%.12Lf ", test[i][j]);
+
+	loadW("../model/W1.w", (long double*) W1);
+	puts("print W1...");
+	for (int i = 0 ; i < 10; i++) {
+		for (int j = 0; j < 10; j++) {
+			printf("%.12Lf ", W1[i][j]);
 		}
 		puts("");
 	}
