@@ -1,4 +1,3 @@
-# Lab 10 MNIST and Dropout
 import tensorflow as tf
 import random
 # import matplotlib.pyplot as plt
@@ -7,17 +6,17 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 PATH_MODEL = '../model/'
 
-def saveW(matrix, filename): # tensor, 
-	
-	shape = matrix.shape
+def saveParam(npArray, filename):
+	if len(npArray.shape) == 1:
+		npArray = np.array([npArray]) # convert to 2d array
+	shape = npArray.shape
 	f = open(filename, 'w')
 	f.write(str(shape[0]) + ' ' + str(shape[1]) + '\n')
 	f.close()
 
 	f = open(filename, 'ab')
-	np.savetxt(f, matrix)
+	np.savetxt(f, npArray)
 	f.close()
-
 
 tf.set_random_seed(777)  # reproducibility
 
@@ -104,16 +103,18 @@ print("Label: ", sess.run(tf.argmax(mnist.test.labels[r:r + 1], 1)))
 print("Prediction: ", sess.run(
     tf.argmax(hypothesis, 1), feed_dict={X: mnist.test.images[r:r + 1], keep_prob: 1}))
 
-# Save Weights
+# Save weight and bias
+saveParam(W1.eval(sess), PATH_MODEL + 'w1.param')
+saveParam(W2.eval(sess), PATH_MODEL + 'w2.param')
+saveParam(W3.eval(sess), PATH_MODEL + 'w3.param')
+saveParam(W4.eval(sess), PATH_MODEL + 'w4.param')
+saveParam(W5.eval(sess), PATH_MODEL + 'w5.param')
 
-saveW(W1.eval(sess), PATH_MODEL + 'W1.w')
-saveW(W2.eval(sess), PATH_MODEL + 'W2.w')
-saveW(W3.eval(sess), PATH_MODEL + 'W3.w')
-saveW(W4.eval(sess), PATH_MODEL + 'W4.w')
-saveW(W5.eval(sess), PATH_MODEL + 'W5.w')
-
-# np.savetxt('W1.w', m.shape)
-# print(W1.eval(sess))
+saveParam(b1.eval(sess), PATH_MODEL + 'b1.param')
+saveParam(b1.eval(sess), PATH_MODEL + 'b2.param')
+saveParam(b1.eval(sess), PATH_MODEL + 'b3.param')
+saveParam(b1.eval(sess), PATH_MODEL + 'b4.param')
+saveParam(b1.eval(sess), PATH_MODEL + 'b5.param')
 
 # plt.imshow(mnist.test.images[r:r + 1].
 #           reshape(28, 28), cmap='Greys', interpolation='nearest')
