@@ -18,7 +18,7 @@ long double B1[HL_LENGTH];
 long double B2[HL_LENGTH];
 long double B3[HL_LENGTH];
 long double B4[HL_LENGTH];
-long double B5[HL_LENGTH];
+long double B5[OUTPUT_LENGTH];
 
 long double evalToken(char* token) {
 	long double val;
@@ -26,7 +26,7 @@ long double evalToken(char* token) {
 	return val;
 }
 
-void passIL(int x[INPUT_LENGTH], int w[INPUT_LENGTH][HL_LENGTH], int b[HL_LENGTH], int result[HL_LENGTH]) {
+void passIL(long double x[INPUT_LENGTH], long double w[INPUT_LENGTH][HL_LENGTH], long double b[HL_LENGTH], long double result[HL_LENGTH]) {
 	
 	for(int n = 0; n < HL_LENGTH; n++) result[n] = b[n]; // copy b to result
 	
@@ -37,7 +37,7 @@ void passIL(int x[INPUT_LENGTH], int w[INPUT_LENGTH][HL_LENGTH], int b[HL_LENGTH
 		if(result[n] < 0) result[n] = 0;
 }
 
-void passHL(int x[HL_LENGTH], int w[HL_LENGTH][HL_LENGTH], int b[HL_LENGTH], int result[HL_LENGTH]) {
+void passHL(long double x[HL_LENGTH], long double w[HL_LENGTH][HL_LENGTH], long double b[HL_LENGTH], long double result[HL_LENGTH]) {
 	
 	for(int n = 0; n < HL_LENGTH; n++) result[n] = b[n]; // copy b to result
 	
@@ -49,18 +49,22 @@ void passHL(int x[HL_LENGTH], int w[HL_LENGTH][HL_LENGTH], int b[HL_LENGTH], int
 
 }
 
-int passOL(int x[HL_LENGTH], int w[HL_LENGTH][OUTPUT_LENGTH], int b[OUTPUT_LENGTH], int result[OUTPUT_LENGTH]) {
+int passOL(long double x[HL_LENGTH], long double w[HL_LENGTH][OUTPUT_LENGTH], long double b[OUTPUT_LENGTH], long double result[OUTPUT_LENGTH]) {
 	
 	for(int n = 0; n < OUTPUT_LENGTH; n++) result[n] = b[n]; // copy b to result
 	
 	for(int m = 0; m < HL_LENGTH; m++) // row-wise matmul
 		for(int n = 0; n < OUTPUT_LENGTH; n++) result[n] += (x[m] * w[m][n]);
 
-	int max = result[0];
+	long double max = result[0];
+	int argmax = 0;
 	for(int n = 1; n < OUTPUT_LENGTH; n++) // get max value (softmax part)
-		if(result[n] > max) max = result[n];
+		if(result[n] > max) {
+			max = result[n];
+			argmax = n;
+		}
 
-	return max;
+	return argmax;
 
 }
 
@@ -136,12 +140,7 @@ int main() {
 	loadParam("../model/b4.param", B4);
 	loadParam("../model/b5.param", B5);
 	
-	puts("print...");
-	for (int i = 0 ; i < 20; i++) {
-		printf("%.12Lf ", B2[i]);
-	}
-
-	puts("");
+	
 
 	return 0;
 }
