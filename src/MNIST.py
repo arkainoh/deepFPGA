@@ -111,10 +111,10 @@ saveParam(W4.eval(sess), PATH_MODEL + 'w4.param')
 saveParam(W5.eval(sess), PATH_MODEL + 'w5.param')
 
 saveParam(b1.eval(sess), PATH_MODEL + 'b1.param')
-saveParam(b1.eval(sess), PATH_MODEL + 'b2.param')
-saveParam(b1.eval(sess), PATH_MODEL + 'b3.param')
-saveParam(b1.eval(sess), PATH_MODEL + 'b4.param')
-saveParam(b1.eval(sess), PATH_MODEL + 'b5.param')
+saveParam(b2.eval(sess), PATH_MODEL + 'b2.param')
+saveParam(b3.eval(sess), PATH_MODEL + 'b3.param')
+saveParam(b4.eval(sess), PATH_MODEL + 'b4.param')
+saveParam(b5.eval(sess), PATH_MODEL + 'b5.param')
 
 # plt.imshow(mnist.test.images[r:r + 1].
 #           reshape(28, 28), cmap='Greys', interpolation='nearest')
