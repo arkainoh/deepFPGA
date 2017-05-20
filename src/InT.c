@@ -18,9 +18,7 @@ long double B1[HL_LENGTH];
 long double B2[HL_LENGTH];
 long double B3[HL_LENGTH];
 long double B4[HL_LENGTH];
-long double B5[OUTPUT_LENGTH];
-
-long double test[3][3];
+long double B5[HL_LENGTH];
 
 long double evalToken(char* token) {
 	long double val;
@@ -89,11 +87,14 @@ void loadParam(char* filename, long double* mat) {
 			if(off) break;
 			switch(line[i]) {
 			case ' ':
-				// save token
-				token[token_cursor] = '\0';
-				token_cursor = 0;
-				*(mat + token_cnt) = evalToken(token);
-				token_cnt++;
+				if((token_cursor == TOKEN_LENGTH && token[0] != '-') ||
+						(token_cursor == TOKEN_LENGTH + 1 && token[0] == '-')) {
+					// save token
+					token[token_cursor] = '\0';
+					token_cursor = 0;
+					*(mat + token_cnt) = evalToken(token);
+					token_cnt++;
+				}
 			break;
 
 			case '\n':
@@ -118,6 +119,7 @@ void loadParam(char* filename, long double* mat) {
 	}
 
 	fclose(f);
+	printf("loadParam(): read tokens from %s (%d/%d)\n", filename, token_cnt, rows * cols);
 }
 
 int main() {
@@ -128,18 +130,18 @@ int main() {
 	loadParam("../model/w4.param", (long double*) W4);
 	loadParam("../model/w5.param", (long double*) W5);
 
-	loadParam("../model/b1.param", (long double*) B1);
-	loadParam("../model/b2.param", (long double*) B2);
-	loadParam("../model/b3.param", (long double*) B3);
-	loadParam("../model/b4.param", (long double*) B4);
-	loadParam("../model/b5.param", (long double*) B5);
-
-	puts("print W1...");
-	for (int i = 0 ; i < 10; i++) {
-		for (int j = 0; j < 10; j++) {
-			printf("%.12Lf ", W1[i][j]);
-		}
-		puts("");
+	loadParam("../model/b1.param", B1);
+	loadParam("../model/b2.param", B2);
+	loadParam("../model/b3.param", B3);
+	loadParam("../model/b4.param", B4);
+	loadParam("../model/b5.param", B5);
+	
+	puts("print...");
+	for (int i = 0 ; i < 20; i++) {
+		printf("%.12Lf ", B2[i]);
 	}
+
+	puts("");
+
 	return 0;
 }
