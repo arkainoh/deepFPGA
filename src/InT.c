@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+
 #define INPUT_LENGTH 784
 #define HL_LENGTH 512
 #define OUTPUT_LENGTH 10
@@ -128,16 +130,6 @@ void loadParam(char* filename, long double* mat) {
 			if(off) break;
 			switch(line[i]) {
 			case ' ':
-				if((token_cursor == TOKEN_LENGTH && token[0] != '-') ||
-						(token_cursor == TOKEN_LENGTH + 1 && token[0] == '-')) {
-					// save token
-					token[token_cursor] = '\0';
-					token_cursor = 0;
-					*(mat + token_cnt) = evalToken(token);
-					token_cnt++;
-				}
-			break;
-
 			case '\n':
 			case '\0':
 				if((token_cursor == TOKEN_LENGTH && token[0] != '-') ||
@@ -186,12 +178,21 @@ int main() {
 
 	// classification
 	showImg(X);
+
+	float gap;
+	time_t startTime = 0, endTime = 0;
+
+	startTime = clock();
 	passIL(X, W1, B1, intervec1);
 	passHL(intervec1, W2, B2, intervec2);
 	passHL(intervec2, W3, B3, intervec1);
 	passHL(intervec1, W4, B4, intervec2);
 	pred = passOL(intervec2, W5, B5, resultvec);
 	printf("classification: %d\n", pred);
+	endTime = clock();
+
+	gap = (float)(endTime - startTime)/CLOCKS_PER_SEC;
+	printf("%f sec elapsed\n", gap);
 
 	return 0;
 }
