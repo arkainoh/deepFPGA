@@ -20,6 +20,43 @@ long double B3[HL_LENGTH];
 long double B4[HL_LENGTH];
 long double B5[OUTPUT_LENGTH];
 
+int loadImg(char* filename, long double x[INPUT_LENGTH]) {
+	char line[BUFFER_SIZE];
+	FILE* f;
+	int token_cnt = 0;
+
+	f = fopen(filename, "r");
+	while (fgets(line, sizeof(line), f)) {
+		char* token;
+		int val;
+
+		token = strtok(line, " ");
+
+		while(token != NULL) {
+			sscanf(token, "%x", &val);
+			x[token_cnt++] = (long double) val;
+			token = strtok(NULL, " ");
+		}
+	}
+
+	fclose(f);
+	return token_cnt;
+}
+
+void showImg(long double x[INPUT_LENGTH]) {
+
+	for(int i = 0; i < INPUT_LENGTH; i++) {
+		if(X[i] > 0) printf("X ");
+		else printf("  ");
+
+		if(i % 28 == 0) {
+			puts("");
+		}
+	}
+
+	puts("");
+}
+
 long double evalToken(char* token) {
 	long double val;
 	sscanf(token, "%Lf", &val);
@@ -50,7 +87,7 @@ void passHL(long double x[HL_LENGTH], long double w[HL_LENGTH][HL_LENGTH], long 
 }
 
 int passOL(long double x[HL_LENGTH], long double w[HL_LENGTH][OUTPUT_LENGTH], long double b[OUTPUT_LENGTH], long double result[OUTPUT_LENGTH]) {
-	
+
 	for(int n = 0; n < OUTPUT_LENGTH; n++) result[n] = b[n]; // copy b to result
 	
 	for(int m = 0; m < HL_LENGTH; m++) // row-wise matmul
@@ -128,6 +165,8 @@ void loadParam(char* filename, long double* mat) {
 
 int main() {
 
+	loadImg("../test/7.mnist", X);
+
 	loadParam("../model/w1.param", (long double*) W1);
 	loadParam("../model/w2.param", (long double*) W2);
 	loadParam("../model/w3.param", (long double*) W3);
@@ -139,8 +178,20 @@ int main() {
 	loadParam("../model/b3.param", B3);
 	loadParam("../model/b4.param", B4);
 	loadParam("../model/b5.param", B5);
-	
-	
+
+	long double intervec1[HL_LENGTH];
+	long double intervec2[HL_LENGTH];
+	long double resultvec[OUTPUT_LENGTH];
+	int pred;
+
+	// classification
+	showImg(X);
+	passIL(X, W1, B1, intervec1);
+	passHL(intervec1, W2, B2, intervec2);
+	passHL(intervec2, W3, B3, intervec1);
+	passHL(intervec1, W4, B4, intervec2);
+	pred = passOL(intervec2, W5, B5, resultvec);
+	printf("classification: %d\n", pred);
 
 	return 0;
 }
