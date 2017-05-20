@@ -26,7 +26,7 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 # parameters
 learning_rate = 0.001
-training_epochs = 1
+training_epochs = 20
 batch_size = 100
 
 # input place holders
@@ -120,22 +120,3 @@ saveParam(b5.eval(sess), PATH_MODEL + 'b5.param')
 #           reshape(28, 28), cmap='Greys', interpolation='nearest')
 # plt.show()
 
-'''
-Epoch: 0001 cost = 0.447322626
-Epoch: 0002 cost = 0.157285590
-Epoch: 0003 cost = 0.121884535
-Epoch: 0004 cost = 0.098128681
-Epoch: 0005 cost = 0.082901778
-Epoch: 0006 cost = 0.075337573
-Epoch: 0007 cost = 0.069752543
-Epoch: 0008 cost = 0.060884363
-Epoch: 0009 cost = 0.055276413
-Epoch: 0010 cost = 0.054631256
-Epoch: 0011 cost = 0.049675195
-Epoch: 0012 cost = 0.049125314
-Epoch: 0013 cost = 0.047231930
-Epoch: 0014 cost = 0.041290121
-Epoch: 0015 cost = 0.043621063
-Learning Finished!
-Accuracy: 0.9804
-'''
