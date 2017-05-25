@@ -55,3 +55,5 @@ FILE *openMNISTImageFile(std::string fileName);
 FILE *openMNISTLabelFile(std::string fileName);
 MNIST_Image getImage(FILE *imageFile);
 MNIST_Label getLabel(FILE *labelFile);
+MNIST_Label getLabel_net(char arr[]);
+MNIST_Image getImage_net(char arr[]);

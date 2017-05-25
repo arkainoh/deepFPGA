@@ -120,8 +120,35 @@ FILE *openMNISTLabelFile(std::string fileName){
 /**
  * @details Returns the next image in the given MNIST image file
  */
+MNIST_Image getImage_net(char arr[])
+{
+    MNIST_Image img;
 
-MNIST_Image getImage(FILE *imageFile){
+    //result = fread(&img, sizeof(img), 1, imageFile);
+    for(int i =1 ; i <INPUT_LENGTH+1;i++)
+    {
+    	img.pixel[i] = (float) arr[i];
+    }
+
+    return img;
+}
+
+MNIST_Label getLabel_net(char arr[])
+{
+
+    MNIST_Label lbl;
+    size_t result;
+    result = arr[0];
+    if (result!=1) {
+        printf("\nError when reading LABEL file! Abort!\n");
+        exit(1);
+    }
+
+    return lbl;
+}
+
+MNIST_Image getImage(FILE *imageFile)
+{
 
     MNIST_Image img;
 
