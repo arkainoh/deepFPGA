@@ -83,6 +83,8 @@ int main(int argc, char *argv[]) {
 		    char client_message[2000];
 			struct sockaddr_in *server =(struct sockaddr_in *) malloc(sizeof(struct sockaddr_in));
 			struct sockaddr_in *client =(struct sockaddr_in *) malloc(sizeof(struct sockaddr_in));
+			MNIST_Image img;
+			MNIST_Label lbl;
 
 		    int socket_desc , client_sock , c , read_size;
 
@@ -107,12 +109,60 @@ int main(int argc, char *argv[]) {
 		        }
 		        puts("Connection accepted");
 	        	int image_size = 0;
+	        	int start=0;
+	        	int how_much=PACKET_SIZE;
 		        //Receive a message from client
-		        while( (read_size = recv(client_sock , client_message , 2000 , 0)) > 0 )
+		        while( (read_size = recv(client_sock , client_message + start , how_much , 0)) > 0 )
 		        {
-		        	{
-			            write(client_sock , client_message , strlen(client_message));
-		        	}
+		           printf("i received the packet with size of %d\n",read_size);
+
+		           if(read_size == PACKET_SIZE){
+					   packet *pkt = (packet *)client_message;
+					   printf("header %d %d %d\n, ",pkt->head.ID, pkt->head.length, pkt->head.type);
+
+					   // show the image that i have received
+					   for(int i = 0; i < pkt->head.length; i++) {
+						   img.pixel[i] = (float)pkt->payload[i];
+					   }
+					   lbl = (uint8_t)pkt->head.ID;
+					  // showImg(img.pixcel);
+
+					   // MNIST calculation
+						total_case++;
+						startTime = clock();
+						passIL(img.pixel, intervec1);
+						passHL2(intervec1, intervec2);
+						passHL3(intervec2, intervec3);
+						passHL4(intervec3, intervec4);
+						passOL(intervec4, &pred);
+						endTime = clock();
+						printf("prediction: %d actual: %d/ ", pred,lbl);
+
+						if(pred == (int)lbl)
+							correct = 1;
+						else
+							correct = 0;
+
+						if(correct){
+							printf("correct\t/ ");
+							correct_case++;
+						}
+						else{
+
+							printf("not\t/ ");
+						}
+						gap = (float)(endTime - startTime)/CLOCKS_PER_SEC;
+						printf("elapsed time: %f precision: %f\n", gap,(float)correct_case/total_case);
+
+
+					   start = 0;
+					   how_much = PACKET_SIZE;
+		           }
+		           else
+		           {
+		        	   start = read_size;
+		        	   how_much = PACKET_SIZE - read_size;
+		           }
 		        }
 
 		        if(read_size == 0)
