@@ -1,4 +1,4 @@
-// http://cofs.tistory.com/281 ÀÌ°Å Âü°íÇØ¹æ
+// http://cofs.tistory.com/281 Ã€ÃŒÂ°Ã… Ã‚Ã¼Â°Ã­Ã‡Ã˜Â¹Ã¦
 import java.awt.Button;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -17,6 +17,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 
 public class InT extends Frame implements MouseMotionListener {
 	private static final long serialVersionUID = -2592446912051617238L;
@@ -160,9 +162,9 @@ public class InT extends Frame implements MouseMotionListener {
 	private void sendData(int label) {
 		try {
 			OutputStream os = this.sock.getOutputStream();
-			ByteBuffer bb = ByteBuffer.allocate(12 + DATA_SIZE * DATA_SIZE);
-			// bb.order(ByteOrder.LITTLE_ENDIAN);
-			
+			ByteBuffer bb = ByteBuffer.allocate(1596);
+			// packet payload size is fixed as 1596 byte.
+			bb.order(ByteOrder.LITTLE_ENDIAN);
 			bb.putInt(1431655765); // type
 			bb.putInt(DATA_SIZE * DATA_SIZE); // length
 			bb.putInt(label); // id
