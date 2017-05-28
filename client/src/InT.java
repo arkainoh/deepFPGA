@@ -173,12 +173,6 @@ public class InT extends Frame implements MouseMotionListener {
 				}
 			}
 			
-			byte[] zz = bb.array();
-			for (byte b : zz) {
-				   System.out.format("%02x ", b);
-			}
-			System.out.println("");
-			
 			os.write(bb.array());
 		    os.flush();
 		    
