@@ -1,5 +1,4 @@
-
-
+// http://cofs.tistory.com/281 이거 참고해방
 import java.awt.Button;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -13,12 +12,19 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.ByteBuffer;
 
 public class InT extends Frame implements MouseMotionListener {
 	private static final long serialVersionUID = -2592446912051617238L;
 	private static final int[][] POINT_COLOR = {{0x34, 0x79, 0x34},{0x79, 0xfe, 0x79},{0x34, 0x79, 0x34}};
 	private static final int DATA_SIZE = 28;
 	private static final int SCALE = 10;
+	private static final String SERVER_IP = "10.0.0.12";
+	private static final int SERVER_PORT = 8888;
 	
 	private int[][] data;
 	private int x;
@@ -27,7 +33,7 @@ public class InT extends Frame implements MouseMotionListener {
 	private int eraserSize;
 	private Image img;
 	private Graphics gImg;
-	
+	private Socket sock;
 	public static void main(String[] args) {
 		new InT("InT");
 	}
@@ -39,6 +45,16 @@ public class InT extends Frame implements MouseMotionListener {
 		this.penSize = SCALE * 3;
 		this.eraserSize = SCALE * 5;
 		this.data = new int[DATA_SIZE][DATA_SIZE];
+		
+		this.sock = new Socket();
+		InetSocketAddress isa = new InetSocketAddress(SERVER_IP, SERVER_PORT);
+		try {
+			System.out.println("connect to server...");
+			sock.connect(isa);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
 		
 		setLayout(null);
 		addMouseMotionListener(this);
@@ -68,9 +84,10 @@ public class InT extends Frame implements MouseMotionListener {
 		Button sendButton = new Button("send");
 		sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e){
-				printData(); // should be changed into sendData()
+				sendData(10);
 			}
 		});
+		
 		p.add(clearButton);
 		p.add(sendButton);
 		add(p);
@@ -78,6 +95,8 @@ public class InT extends Frame implements MouseMotionListener {
 		img = createImage(DATA_SIZE * SCALE, DATA_SIZE * SCALE);
 		gImg = img.getGraphics();
 		repaint();
+		
+		
 	}
 
 	@Override
@@ -136,5 +155,48 @@ public class InT extends Frame implements MouseMotionListener {
 			}
 			System.out.println();
 		}
+	}
+	
+	private void sendData(int label) {
+		try {
+			OutputStream os = this.sock.getOutputStream();
+			ByteBuffer bb = ByteBuffer.allocate(12 + DATA_SIZE * DATA_SIZE);
+			// bb.order(ByteOrder.LITTLE_ENDIAN);
+			
+			bb.putInt(1431655765); // type
+			bb.putInt(DATA_SIZE * DATA_SIZE); // length
+			bb.putInt(label); // id
+			
+			for(int i = 0; i < DATA_SIZE; i++) {
+				for(int j = 0; j < DATA_SIZE; j++) {
+					bb.put(unsignedByte(data[i][j]));
+				}
+			}
+			
+			byte[] zz = bb.array();
+			for (byte b : zz) {
+				   System.out.format("%02x ", b);
+			}
+			System.out.println("");
+			
+			os.write(bb.array());
+		    os.flush();
+		    
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
+	}
+	
+	public static byte unsignedByte(int n) throws IllegalArgumentException {
+		if(n >= 256 || n < 0) {
+			throw new IllegalArgumentException("should range from 0 to 255");
+		}
+		
+		if(n >= Byte.MAX_VALUE + 1) {
+			n -= Byte.MAX_VALUE;
+			n = -n;
+		}
+		
+		return (byte)n;
 	}
 }
