@@ -15,7 +15,7 @@
 #include<stdint.h>
 
 #define PACKET_SIZE 1596
-#define MAX_DATA 756
+#define MAX_DATA 784
 
 typedef struct header{
 	uint32_t type;
