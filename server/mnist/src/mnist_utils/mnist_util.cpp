@@ -155,7 +155,7 @@ MNIST_Image getImage(FILE *imageFile)
     //result = fread(&img, sizeof(img), 1, imageFile);
     for(int i =0 ; i <INPUT_LENGTH;i++)
     {
-    	img.pixel[i] = (float) fgetc(imageFile);
+    	img.pixel[i] = (float) ( (float) fgetc(imageFile) ) / 255;
     }
 
     return img;
