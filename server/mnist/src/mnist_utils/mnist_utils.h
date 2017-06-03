@@ -2,22 +2,17 @@
 #include <stdio.h>
 #include <iostream>
 #include <cstdlib>
-#include "weights/defines.h"
-
+#include "../weights/defines.h"
 
 typedef struct MNIST_ImageFileHeader MNIST_ImageFileHeader;
 typedef struct MNIST_LabelFileHeader MNIST_LabelFileHeader;
 
-
 typedef struct MNIST_Image MNIST_Image;
 typedef uint8_t MNIST_Label;
 
-struct MNIST_Image{
+struct MNIST_Image {
     float pixel[MNIST_IMG_WIDTH*MNIST_IMG_HEIGHT];
 };
-
-
-
 
 /**
  * @brief Data block defining a MNIST image file header
@@ -27,7 +22,7 @@ struct MNIST_Image{
  * @see http://yann.lecun.com/exdb/mnist/ for details
  */
 
-struct MNIST_ImageFileHeader{
+struct MNIST_ImageFileHeader {
     uint32_t magicNumber;
     uint32_t maxImages;
     uint32_t imgWidth;
@@ -42,7 +37,7 @@ struct MNIST_ImageFileHeader{
  * @see http://yann.lecun.com/exdb/mnist/ for details
  */
 
-struct MNIST_LabelFileHeader{
+struct MNIST_LabelFileHeader {
     uint32_t magicNumber;
     uint32_t maxImages;
 };
@@ -57,3 +52,4 @@ MNIST_Image getImage(FILE *imageFile);
 MNIST_Label getLabel(FILE *labelFile);
 MNIST_Label getLabel_net(char arr[]);
 MNIST_Image getImage_net(char arr[]);
+
