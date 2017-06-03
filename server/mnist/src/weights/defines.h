@@ -8,3 +8,5 @@
 #define MNIST_MAX_TESTING_IMAGES 10000                      ///< number of images+labels in the TEST file/s
 #define MNIST_IMG_WIDTH 28                                  ///< image width in pixel
 #define MNIST_IMG_HEIGHT 28                                 ///< image height in pixel
+
+#define learning_rate 0.0001
