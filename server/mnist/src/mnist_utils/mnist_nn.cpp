@@ -26,9 +26,7 @@ void weightInitialization(void) {
 		for(int j=0;j<512;j++) {
 			 W1[i][j] = disgogo(gen);	
 			 //W1[i][j] = dis(gen);	
-			 //printf("%f ",W1[i][j]);
 			 //W1[i][j] = rand()%A;
-			 printf("%f ", W1[i][j]);
 		}
 	}
 	
