@@ -9,6 +9,7 @@
 #include "network/networking.h"
 
 #define TRAINING_EPOCH 5
+#define TRAINING_BATCH 1000
 
 int main(int argc, char *argv[]) {
 
@@ -29,15 +30,15 @@ int main(int argc, char *argv[]) {
 	float gap;
 	int pred;
 	time_t startTime = 0, endTime = 0;
-	int total_case=0;
-	int correct_case=0;
+	int total_case = 0;
+	int correct_case = 0;
 	int i;
 
 	while (true)
 	{
 		printf("\r\n\
 				<MENU>\r\n\
-				1: open server\n\r\
+				1: connect to client\n\r\
 				2: train\n\r\
 				3: test\n\r\
 				4: exit\n\r");
@@ -55,7 +56,7 @@ int main(int argc, char *argv[]) {
 				MNIST_Image img;
 				MNIST_Label lbl;
 
-				int socket_desc , client_sock , c , read_size;
+				int socket_desc, client_sock, c, read_size;
 
 				if(connection(&socket_desc, server)) exit(1);
 
@@ -84,7 +85,7 @@ int main(int argc, char *argv[]) {
 
 							if(read_size == PACKET_SIZE) {
 								packet *pkt = (packet *)client_message;
-								printf("header %d %d %d\n, ", pkt->head.ID, pkt->head.length, pkt->head.type);
+								printf("header %d %d %d\n", pkt->head.ID, pkt->head.length, pkt->head.type);
 
 								// show the image that i have received
 								for(int i = 0; i < pkt->head.length; i++) {
@@ -200,15 +201,15 @@ int main(int argc, char *argv[]) {
 
 						loss += (getLoss(intervec5, lbl) / MNIST_MAX_TRAINING_IMAGES);
 
-						if(imgCount % 1000 == 0) {
+						if(imgCount % TRAINING_BATCH == 0) {
 							endTime = clock();
 							gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
-							printf("[%d/%d] Loss: %f / accuracy: %f / elapsed time: %dm %ds\n", imgCount, MNIST_MAX_TRAINING_IMAGES, loss, (float) correct_case / total_case, (int) gap / 60, (int) gap % 60);
+							printf("[%d/%d] loss: %f / accuracy: %f / elapsed time: %dm %ds\n", imgCount, MNIST_MAX_TRAINING_IMAGES, loss, (float) correct_case / total_case, (int) gap / 60, (int) gap % 60);
 						}
 					}
 					endTime = clock();
 					gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
-					printf("epoch: %d, Loss: %f / accuracy: %f / elapsed time: %dm %ds\n", epoch, loss, (float) correct_case / total_case, (int) gap / 60, (int) gap % 60);
+					printf("epoch: %d, loss: %f / accuracy: %f / elapsed time: %dm %ds\n", epoch, loss, (float) correct_case / total_case, (int) gap / 60, (int) gap % 60);
 				}
 				break;
 			}
