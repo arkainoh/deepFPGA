@@ -1,20 +1,14 @@
-/*
- * main.cpp
- *
- *  Created on: May 21, 2017
- *      Author: root
- */
-
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include<unistd.h>    //write
+#include <unistd.h>
+#include <iostream>
 
-
-#include "mnist_utils/mnist-utils.h"
-#include "mnist_utils/mnist_feedforward.h"
-
+#include "mnist_utils/mnist_utils.h"
+#include "mnist_utils/mnist_nn.h"
 #include "network/networking.h"
+
+#define TRAINING_EPOCH 5
 
 int main(int argc, char *argv[]) {
 
@@ -22,6 +16,14 @@ int main(int argc, char *argv[]) {
 	float intervec2[HL_LENGTH];
 	float intervec3[HL_LENGTH];
 	float intervec4[HL_LENGTH];
+	float intervec5[OUTPUT_LENGTH];
+
+	float EH1[HL_LENGTH];
+	float EH2[HL_LENGTH];
+	float EH3[HL_LENGTH];
+	float EH4[HL_LENGTH];
+	float e[OUTPUT_LENGTH];
+	float t[OUTPUT_LENGTH];	
 
 	int correct = 0;
 	float gap;
@@ -29,172 +31,247 @@ int main(int argc, char *argv[]) {
 	time_t startTime = 0, endTime = 0;
 	int total_case=0;
 	int correct_case=0;
-
+	int i;
 
 	while (true)
 	{
-		printf("please, enter the option, \n1: testing with /test/t10kblahblah data\n	\r \
-				2: server-client model training visualization\n\r\
-				3: accuracy control\n\r\
+		printf("\r\n\
+				<MENU>\r\n\
+				1: open server\n\r\
+				2: train\n\r\
+				3: test\n\r\
 				4: exit\n\r");
-		int where;
-		std::cin >> where;
-		switch(where){
 
-		case 1:
-		{
-			correct = 0; startTime = 0; endTime = 0; total_case = 0; correct_case = 0;
+		int menu;
+		std::cin >> menu;
+		switch(menu){
 
-			FILE *imageFile, *labelFile;
-			imageFile = openMNISTImageFile("test/t10k-images-idx3-ubyte");
-			labelFile = openMNISTLabelFile("test/t10k-labels-idx1-ubyte");
+			case 1:
+			{
+				correct = 0; startTime = 0; endTime = 0; total_case = 0; correct_case = 0;
+				char client_message[2000];
+				struct sockaddr_in *server = (struct sockaddr_in *) malloc(sizeof(struct sockaddr_in));
+				struct sockaddr_in *client = (struct sockaddr_in *) malloc(sizeof(struct sockaddr_in));
+				MNIST_Image img;
+				MNIST_Label lbl;
 
-			for (int imgCount=0; imgCount<MNIST_MAX_TRAINING_IMAGES; imgCount++){
-				total_case++;
-				MNIST_Image img = getImage(imageFile);
-				MNIST_Label lbl = getLabel(labelFile);
+				int socket_desc , client_sock , c , read_size;
 
-				startTime = clock();
-				passIL(img.pixel, intervec1);
-				passHL2(intervec1, intervec2);
-				passHL3(intervec2, intervec3);
-				passHL4(intervec3, intervec4);
-				passOL(intervec4, &pred);
-				endTime = clock();
-				printf("prediction: %d actual: %d/ ", pred,lbl);
-				if(pred == lbl)
-					correct = 1;
+				if(connection(&socket_desc, server)) exit(1);
 
-				if(correct){
-					printf("correct\t/ ");
-					correct_case++;
-				}
-				else
-					printf("not\t/ ");
+					while(1) {
+						listen(socket_desc, 3);
 
-				gap = (float)(endTime - startTime)/CLOCKS_PER_SEC;
-				printf("elapsed time: %f precision: %f\n", gap,(float)correct_case/total_case);
+						puts("waiting for connections...");
+						c = sizeof(struct sockaddr_in);
+
+						// accept connection from an incoming client
+						client_sock = accept(socket_desc, (struct sockaddr *) &client, (socklen_t*) &c);
+						if(client_sock < 0)	{
+							perror("connection failed");
+							return 1;
+						}
+
+						puts("connection successful");
+
+						int image_size = 0;
+						int start = 0;
+						int how_much = PACKET_SIZE;
+
+						// receive a message from client
+						while((read_size = recv(client_sock, client_message + start, how_much, 0)) > 0) {
+							printf("received a packet (size: %d)\n", read_size);
+
+							if(read_size == PACKET_SIZE) {
+								packet *pkt = (packet *)client_message;
+								printf("header %d %d %d\n, ", pkt->head.ID, pkt->head.length, pkt->head.type);
+
+								// show the image that i have received
+								for(int i = 0; i < pkt->head.length; i++) {
+									img.pixel[i] = (float) pkt->payload[i];
+								}
+
+								lbl = (uint8_t) pkt->head.ID;
+								// showImg(img.pixcel);
+
+								total_case++;
+								startTime = clock();
+								passIL(img.pixel, intervec1);
+								passHL2(intervec1, intervec2);
+								passHL3(intervec2, intervec3);
+								passHL4(intervec3, intervec4);
+								passOL(intervec4, intervec5);
+								endTime = clock();
+							
+								float maxVal = intervec5[0];
+								pred = 0;
+								for(int i = 1; i < 10; i++) {
+									if(maxVal < intervec5[i]) {
+										pred = i;
+										maxVal = intervec5[i];
+									}
+								}
+
+								if(pred == (int) lbl) correct = 1;
+								else correct = 0;
+
+								if(correct) {
+									printf("[correct] ");
+									correct_case++;
+								}
+								else {
+									printf("[incorrect] ");
+								}
+								
+								printf("pred: %d, actual: %d / ", pred,lbl);
+
+								gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
+								printf("elapsed time: %dm %ds accuracy: %f\n", (int) gap / 60, (int) gap % 60, (float) correct_case / total_case);
+
+								start = 0;
+								how_much = PACKET_SIZE;
+
+							} else {
+								start = read_size;
+								how_much = PACKET_SIZE - read_size;
+							}
+						}
+
+						if(read_size == 0) {
+							puts("client disconnected");
+							fflush(stdout);
+						} else if(read_size == -1) {
+							perror("recv failed");
+						}
+					}
+
+				break;
 			}
-			break;
-		}
-		case 2:
-		{
-			correct = 0; startTime = 0; endTime = 0; total_case = 0; correct_case = 0;
-		    char client_message[2000];
-			struct sockaddr_in *server =(struct sockaddr_in *) malloc(sizeof(struct sockaddr_in));
-			struct sockaddr_in *client =(struct sockaddr_in *) malloc(sizeof(struct sockaddr_in));
-			MNIST_Image img;
-			MNIST_Label lbl;
+			case 2:
+			{
+				correct = 0; total_case = 0; correct_case = 0;
+				weightInitialization();
+				startTime = clock(); endTime = 0;
 
-		    int socket_desc , client_sock , c , read_size;
+				for(int epoch = 0; epoch < TRAINING_EPOCH; epoch++) {
+					
+					FILE *trainingimageFile, *traininglabelFile;
+					trainingimageFile = openMNISTImageFile("test/train-images-idx3-ubyte");
+					traininglabelFile = openMNISTLabelFile("test/train-labels-idx1-ubyte");
 
-			if( connection(&socket_desc, server))
-		    	exit(1);
-
-		    while(1)
-		    {
-		    	//listen
-		        listen(socket_desc , 3);
-
-		        //Accept and incoming connection
-		        puts("Waiting for incoming connections...");
-		        c = sizeof(struct sockaddr_in);
-
-		        //accept connection from an incoming client
-		        client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c);
-		        if (client_sock < 0)
-		        {
-		            perror("accept failed");
-		            return 1;
-		        }
-		        puts("Connection accepted");
-	        	int image_size = 0;
-	        	int start=0;
-	        	int how_much=PACKET_SIZE;
-		        //Receive a message from client
-		        while( (read_size = recv(client_sock , client_message + start , how_much , 0)) > 0 )
-		        {
-		           printf("i received the packet with size of %d\n",read_size);
-
-		           if(read_size == PACKET_SIZE){
-					   packet *pkt = (packet *)client_message;
-					   printf("header %d %d %d\n, ",pkt->head.ID, pkt->head.length, pkt->head.type);
-
-					   // show the image that i have received
-					   for(int i = 0; i < pkt->head.length; i++) {
-						   img.pixel[i] = (float)pkt->payload[i];
-					   }
-					   lbl = (uint8_t)pkt->head.ID;
-					  // showImg(img.pixcel);
-
-					   // MNIST calculation
+					float loss = 0;
+					for(int imgCount = 0; imgCount < MNIST_MAX_TRAINING_IMAGES; imgCount++) {
+														
 						total_case++;
-						startTime = clock();
+						MNIST_Image img = getImage(trainingimageFile);
+						MNIST_Label lbl = getLabel(traininglabelFile);
+
 						passIL(img.pixel, intervec1);
 						passHL2(intervec1, intervec2);
 						passHL3(intervec2, intervec3);
 						passHL4(intervec3, intervec4);
-						passOL(intervec4, &pred);
-						endTime = clock();
-						printf("prediction: %d actual: %d/ ", pred,lbl);
+						passOL(intervec4, intervec5);
+									
+						float maxVal = intervec5[0];
+						pred = 0;
+						
+						for(i = 1; i < 10; i++) {
+							if(maxVal < intervec5[i]){
+								maxVal = intervec5[i];
+								pred = i;
+							}
+						}
 
-						if(pred == (int)lbl)
-							correct = 1;
-						else
-							correct = 0;
+						getError(intervec5,(int) lbl, e);
+						
+						// backpropagation
+						backOL(e, intervec4, intervec5);  
+						backHL4(e, intervec3, intervec4, EH1);
+						backHL3(EH1, intervec2, intervec3, EH2);
+						backHL2(EH2, intervec1, intervec2, EH3);
+						backHL1(EH3, img.pixel, intervec1);
 
-						if(correct){
-							printf("correct\t/ ");
+						if(pred == lbl)	correct = 1;
+						else correct = 0;
+
+						if(correct) {
 							correct_case++;
 						}
-						else{
 
-							printf("not\t/ ");
+						loss += (getLoss(intervec5, lbl) / MNIST_MAX_TRAINING_IMAGES);
+
+						if(imgCount % 1000 == 0) {
+							endTime = clock();
+							gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
+							printf("[%d/%d] Loss: %f / accuracy: %f / elapsed time: %dm %ds\n", imgCount, MNIST_MAX_TRAINING_IMAGES, loss, (float) correct_case / total_case, (int) gap / 60, (int) gap % 60);
 						}
-						gap = (float)(endTime - startTime)/CLOCKS_PER_SEC;
-						printf("elapsed time: %f precision: %f\n", gap,(float)correct_case/total_case);
+					}
+					endTime = clock();
+					gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
+					printf("epoch: %d, Loss: %f / accuracy: %f / elapsed time: %dm %ds\n", epoch, loss, (float) correct_case / total_case, (int) gap / 60, (int) gap % 60);
+				}
+				break;
+			}
+			case 3:
+			{
+				correct = 0; startTime = 0; endTime = 0; total_case = 0; correct_case = 0;
 
+				FILE *testingimageFile, *testinglabelFile;
+				testingimageFile = openMNISTImageFile("test/t10k-images-idx3-ubyte");
+				testinglabelFile = openMNISTLabelFile("test/t10k-labels-idx1-ubyte");
+				for(int imgCount = 0; imgCount < MNIST_MAX_TESTING_IMAGES; imgCount++) {
+													
+					total_case++;
+					MNIST_Image img = getImage(testingimageFile);
+					MNIST_Label lbl = getLabel(testinglabelFile);
 
-					   start = 0;
-					   how_much = PACKET_SIZE;
-		           }
-		           else
-		           {
-		        	   start = read_size;
-		        	   how_much = PACKET_SIZE - read_size;
-		           }
-		        }
+					startTime = clock();
+					passIL(img.pixel, intervec1);
+					passHL2(intervec1, intervec2);
+					passHL3(intervec2, intervec3);
+					passHL4(intervec3, intervec4);
+					passOL(intervec4, intervec5);
+					endTime = clock();
+								
+					float maxVal = intervec5[0];
+					pred = 0;
+					
+					for(i = 1; i < 10; i++)	{
+						if(maxVal < intervec5[i]) {
+							maxVal = intervec5[i];
+							pred = i;
+						}
+					}
 
-		        if(read_size == 0)
-		        {
-		            puts("Client disconnected");
-		            fflush(stdout);
-		        }
-		        else if(read_size == -1)
-		        {
-		            perror("recv failed");
-		        }
+					if(pred == lbl)	correct = 1;
+					else correct = 0;
 
-		    }
+					if(correct){
+						printf("[correct] ");
+						correct_case++;
+					} else {
+						// showImg(img.pixel);
+						printf("[incorrect] ");
+					}
+					printf("pred: %d, actual: %d / ", pred, lbl);
 
-			break;
-		}
-		case 3:
-		{
-			break;
-		}
-		case 4:
-		{
-			break;
-		}
-		default:
-		{
-			break;
-		}
+					gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
+					printf("elapsed time: %dm %ds accuracy: %f\n", (int) gap / 60, (int) gap % 60, (float) correct_case/total_case);
+
+				}
+				break;
+			}
+			case 4:
+			{
+				return 0;
+			}
+			default:
+			{
+				break;
+			}
 		}
 
 	}
-
 
 	return 0;
 }
