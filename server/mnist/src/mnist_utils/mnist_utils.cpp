@@ -3,34 +3,34 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <math.h>
+#include <random>
+#include "mnist_utils.h"
 
-#include "mnist-utils.h"
 
 uint32_t flipBytes(uint32_t n){
 
-    uint32_t b0,b1,b2,b3;
+    uint32_t b0, b1, b2, b3;
 
-    b0 = (n & 0x000000ff) <<  24u;
-    b1 = (n & 0x0000ff00) <<   8u;
-    b2 = (n & 0x00ff0000) >>   8u;
-    b3 = (n & 0xff000000) >>  24u;
+    b0 = (n & 0x000000ff) << 24u;
+    b1 = (n & 0x0000ff00) <<  8u;
+    b2 = (n & 0x00ff0000) >>  8u;
+    b3 = (n & 0xff000000) >> 24u;
 
     return (b0 | b1 | b2 | b3);
-
 }
-
 
 /**
  * @details Read MNIST image file header
  * @see http://yann.lecun.com/exdb/mnist/ for definition details
  */
 
-void readImageFileHeader(FILE *imageFile, MNIST_ImageFileHeader *ifh){
+void readImageFileHeader(FILE *imageFile, MNIST_ImageFileHeader *ifh) {
 
-    ifh->magicNumber =0;
-    ifh->maxImages   =0;
-    ifh->imgWidth    =0;
-    ifh->imgHeight   =0;
+    ifh->magicNumber = 0;
+    ifh->maxImages   = 0;
+    ifh->imgWidth    = 0;
+    ifh->imgHeight   = 0;
 
     fread(&ifh->magicNumber, 4, 1, imageFile);
     ifh->magicNumber = flipBytes(ifh->magicNumber);
@@ -45,18 +45,15 @@ void readImageFileHeader(FILE *imageFile, MNIST_ImageFileHeader *ifh){
     ifh->imgHeight = flipBytes(ifh->imgHeight);
 }
 
-
-
-
 /**
  * @details Read MNIST label file header
  * @see http://yann.lecun.com/exdb/mnist/ for definition details
  */
 
-void readLabelFileHeader(FILE *imageFile, MNIST_LabelFileHeader *lfh){
+void readLabelFileHeader(FILE *imageFile, MNIST_LabelFileHeader *lfh) {
 
-    lfh->magicNumber =0;
-    lfh->maxImages   =0;
+    lfh->magicNumber = 0;
+    lfh->maxImages   = 0;
 
     fread(&lfh->magicNumber, 4, 1, imageFile);
     lfh->magicNumber = flipBytes(lfh->magicNumber);
@@ -66,21 +63,18 @@ void readLabelFileHeader(FILE *imageFile, MNIST_LabelFileHeader *lfh){
 
 }
 
-
-
-
 /**
  * @details Open MNIST image file and read header info
  * by reading the header info, the read pointer
  * is moved to the position of the 1st IMAGE
  */
 
-FILE *openMNISTImageFile(std::string fileName){
+FILE *openMNISTImageFile(std::string fileName) {
 
     FILE *imageFile;
     imageFile = fopen (fileName.c_str(), "rb");
     if (imageFile == NULL) {
-        printf("Abort! Could not fine MNIST IMAGE file: %s\n",fileName.c_str());
+        printf("file not found: %s\n", fileName.c_str());
         exit(0);
     }
 
@@ -89,9 +83,6 @@ FILE *openMNISTImageFile(std::string fileName){
 
     return imageFile;
 }
-
-
-
 
 /**
  * @details Open MNIST label file and read header info
@@ -104,7 +95,7 @@ FILE *openMNISTLabelFile(std::string fileName){
     FILE *labelFile;
     labelFile = fopen (fileName.c_str(), "rb");
     if (labelFile == NULL) {
-        printf("Abort! Could not find MNIST LABEL file: %s\n",fileName.c_str());
+        printf("file not found: %s\n", fileName.c_str());
         exit(0);
     }
 
@@ -114,61 +105,51 @@ FILE *openMNISTLabelFile(std::string fileName){
     return labelFile;
 }
 
-
-
-
 /**
  * @details Returns the next image in the given MNIST image file
  */
-MNIST_Image getImage_net(char arr[])
-{
+
+MNIST_Image getImage_net(char arr[]) {
     MNIST_Image img;
 
     //result = fread(&img, sizeof(img), 1, imageFile);
-    for(int i =1 ; i <INPUT_LENGTH+1;i++)
-    {
+    for(int i = 1 ; i <INPUT_LENGTH + 1;i++) {
     	img.pixel[i] = (float) arr[i];
     }
 
     return img;
 }
 
-MNIST_Label getLabel_net(char arr[])
-{
+MNIST_Label getLabel_net(char arr[]) {
 
     MNIST_Label lbl;
     size_t result;
     result = arr[0];
-    if (result!=1) {
-        printf("\nError when reading LABEL file! Abort!\n");
+    if (result != 1) {
+        printf("\nerror occurred reading LABEL file\n");
         exit(1);
     }
 
     return lbl;
 }
 
-MNIST_Image getImage(FILE *imageFile)
-{
+MNIST_Image getImage(FILE *imageFile) {
 
     MNIST_Image img;
 
     //result = fread(&img, sizeof(img), 1, imageFile);
-    for(int i =0 ; i <INPUT_LENGTH;i++)
-    {
-    	img.pixel[i] = (float) ( (float) fgetc(imageFile) ) / 255;
+    for(int i =0 ; i <INPUT_LENGTH;i++) {
+    	img.pixel[i] = (float) ((float) fgetc(imageFile)) / 255;
     }
 
     return img;
 }
 
-
-
-
 /**
  * @details Returns the next label in the given MNIST label file
  */
 
-MNIST_Label getLabel(FILE *labelFile){
+MNIST_Label getLabel(FILE *labelFile) {
 
     MNIST_Label lbl;
     size_t result;
@@ -180,7 +161,6 @@ MNIST_Label getLabel(FILE *labelFile){
 
     return lbl;
 }
-
 
 void loadParam(char* filename, float* mat) {
 
@@ -230,6 +210,7 @@ void loadParam(char* filename, float* mat) {
 	fclose(f);
 	printf("loadParam(): read tokens from %s (%d/%d)\n", filename, token_cnt, rows * cols);
 }
+
 //
 //
 //int loadImg(char* filename, float x[INPUT_LENGTH]) {
