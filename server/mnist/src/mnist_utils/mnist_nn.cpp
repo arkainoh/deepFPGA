@@ -5,6 +5,12 @@
 #include <time.h>
 #include <stdlib.h>
 
+float learning_rate = 0.0001;
+
+void setLearningRate(float val) {
+	learning_rate = val;
+}
+
 void weightInitialization(void) {
 	int A = 4;
 	std::random_device rd;

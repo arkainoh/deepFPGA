@@ -9,4 +9,3 @@
 #define MNIST_IMG_WIDTH 28                                  ///< image width in pixel
 #define MNIST_IMG_HEIGHT 28                                 ///< image height in pixel
 
-#define learning_rate 0.0001

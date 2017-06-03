@@ -20,7 +20,7 @@
 
 void getError(float y[OUTPUT_LENGTH], int label, float e[OUTPUT_LENGTH]);
 float getLoss(float y[OUTPUT_LENGTH], int label);
-void backOL(float e[OUTPUT_LENGTH],float iv[HL_LENGTH], float ov[OUTPUT_LENGTH]);
+void backOL(float e[OUTPUT_LENGTH], float iv[HL_LENGTH], float ov[OUTPUT_LENGTH]);
 void backHL4(float e[OUTPUT_LENGTH], float iv[HL_LENGTH], float ov[HL_LENGTH], float newEH[HL_LENGTH]);
 void backHL3(float prevEI[HL_LENGTH], float iv[HL_LENGTH], float ov[HL_LENGTH], float newEH[HL_LENGTH]);
 void backHL2(float prevEI[HL_LENGTH], float iv[HL_LENGTH], float ov[HL_LENGTH], float newEH[HL_LENGTH]);
@@ -32,5 +32,6 @@ void passHL3(float x[HL_LENGTH], float result[HL_LENGTH]);
 void passHL4(float x[HL_LENGTH], float result[HL_LENGTH]);
 void passOL(float x[HL_LENGTH],  float result[OUTPUT_LENGTH]);
 void weightInitialization(void);
+void setLearningRate(float val);
 
 #endif

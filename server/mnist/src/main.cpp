@@ -26,13 +26,12 @@ int main(int argc, char *argv[]) {
 	float e[OUTPUT_LENGTH];
 	float t[OUTPUT_LENGTH];	
 
-	int correct = 0;
+	int correct;
 	float gap;
 	int pred;
-	time_t startTime = 0, endTime = 0;
-	int total_case = 0;
-	int correct_case = 0;
-	int i;
+	time_t startTime, endTime;
+	int total_case;
+	int correct_case;
 
 	while (true)
 	{
@@ -117,7 +116,7 @@ int main(int argc, char *argv[]) {
 								else correct = 0;
 
 								if(correct) {
-									printf("[correct] ");
+									printf("[ correct ] ");
 									correct_case++;
 								}
 								else {
@@ -152,6 +151,7 @@ int main(int argc, char *argv[]) {
 			{
 				correct = 0; total_case = 0; correct_case = 0;
 				weightInitialization();
+				setLearningRate(0.0001);
 				startTime = clock(); endTime = 0;
 
 				for(int epoch = 0; epoch < TRAINING_EPOCH; epoch++) {
@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
 						float maxVal = intervec5[0];
 						pred = 0;
 						
-						for(i = 1; i < 10; i++) {
+						for(int i = 1; i < 10; i++) {
 							if(maxVal < intervec5[i]){
 								maxVal = intervec5[i];
 								pred = i;
@@ -237,7 +237,7 @@ int main(int argc, char *argv[]) {
 					float maxVal = intervec5[0];
 					pred = 0;
 					
-					for(i = 1; i < 10; i++)	{
+					for(int i = 1; i < 10; i++)	{
 						if(maxVal < intervec5[i]) {
 							maxVal = intervec5[i];
 							pred = i;
@@ -248,7 +248,7 @@ int main(int argc, char *argv[]) {
 					else correct = 0;
 
 					if(correct){
-						printf("[correct] ");
+						printf("[ correct ] ");
 						correct_case++;
 					} else {
 						// showImg(img.pixel);
