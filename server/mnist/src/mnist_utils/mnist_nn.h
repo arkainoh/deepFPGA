@@ -31,7 +31,13 @@ void passHL2(float x[HL_LENGTH], float result[HL_LENGTH]);
 void passHL3(float x[HL_LENGTH], float result[HL_LENGTH]);
 void passHL4(float x[HL_LENGTH], float result[HL_LENGTH]);
 void passOL(float x[HL_LENGTH],  float result[OUTPUT_LENGTH]);
-void weightInitialization(void);
+
+void xavierInitialization(float *mat, int fan_in, int fan_out);
+void normalDistribution(float *mat, int fan_in, int fan_out);
+void uniformDistribution(float *mat, int fan_in, int fan_out);
+void constantInitialization(float *mat, int fan_in, int fan_out, float val);
+void weightInitialization_xavier(void);
+void weightInitialization_uniform(void);
 void setLearningRate(float val);
 
 #endif

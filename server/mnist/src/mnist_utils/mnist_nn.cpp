@@ -11,72 +11,85 @@ void setLearningRate(float val) {
 	learning_rate = val;
 }
 
-void weightInitialization(void) {
-	int A = 4;
+void xavierInitialization(float* mat, int fan_in, int fan_out) {
 	std::random_device rd;
 	std::mt19937 gen(rd());
-
-	//distribution for weights
-	std::uniform_real_distribution<float> disgogo(-0.1,0.1);
-	std::uniform_real_distribution<float> dis(-sqrt(3/(784*512)),sqrt(3/(784*512)) );
-	std::uniform_real_distribution<float> dis1(-sqrt(3/(512*512)),sqrt(3/(512*512)) );	
-	std::uniform_real_distribution<float> dis2(-sqrt(3/(10*512)),sqrt(3/(10*512)) );
-
-	//distribution for bias
-	std::uniform_real_distribution<float> dis3(-sqrt(3/(512)),sqrt(3/(512)) );
-	std::uniform_real_distribution<float> dis4(-sqrt(3/(10)),sqrt(3/(10)) );
-
+	float range = sqrt(6.0 / (fan_in + fan_out));
+	std::uniform_real_distribution<float> xavier(-range, range);
 	srand(time(NULL));
-
-	for(int i=0;i<784;i++) {
-		for(int j=0;j<512;j++) {
-			 W1[i][j] = disgogo(gen);	
-			 //W1[i][j] = dis(gen);	
-			 //W1[i][j] = rand()%A;
-		}
-	}
-	
-	for(int i=0;i<512;i++) {
-		for(int j=0;j<512;j++) {	
-			 //W2[i][j] = dis1(gen);
-			 //W3[i][j] = dis1(gen);
-			 //W4[i][j] = dis1(gen);
-	
-			 W2[i][j] = disgogo(gen);
-			 W3[i][j] = disgogo(gen);
-			 W4[i][j] = disgogo(gen);
-	
-			 //W2[i][j] = rand()%A;
-			 //W3[i][j] = rand()%A;
-			 //W4[i][j] = rand()%A;
-		
-		}
-	}
-	for(int i =0;i<512;i++) {
-		for(int j=0;j<10;j++)	{
-			W5[i][j] = disgogo(gen);
-			//W5[i][j] = rand()%A;
-		}
-	}
-	
-	// bias
-	for(int i=0;i<512;i++) {
-		B1[i] = disgogo(gen);
-		B2[i] = disgogo(gen);
-		B3[i] = disgogo(gen);
-		B4[i] = disgogo(gen);
-		
-		//B1[i] = rand()%A;
-		//B2[i] = rand()%A;
-		//B3[i] = rand()%A;
-		//B4[i] = rand()%A;
-	
-	}
-	for(int i=0;i<10;i++)	{
-		B5[i] = disgogo(gen);
+	for(int i = 0; i < fan_in * fan_out; i++) {
+		*(mat + i) = xavier(gen);		
 	}
 }
 
+void normalDistribution(float *mat, int fan_in, int fan_out) {
+	std::default_random_engine gen;
+	std::normal_distribution<float> nd(0.0, 1.0);
+	srand(time(NULL));
+	for(int i = 0; i < fan_in * fan_out; i++) {
+		*(mat + i) = nd(gen);		
+	}
+}
+
+void uniformDistribution(float *mat, int fan_in, int fan_out) {
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	float range = 0.1;
+	std::uniform_real_distribution<float> ud(-range, range);
+	srand(time(NULL));
+	for(int i = 0; i < fan_in * fan_out; i++) {
+		*(mat + i) = ud(gen);		
+	}
+}
+
+void constantInitialization(float *mat, int fan_in, int fan_out, float val) {
+	for(int i = 0; i < fan_in * fan_out; i++) {
+		*(mat + i) = val;
+	}
+}
+
+void weightInitialization_xavier(void) {
+	
+	xavierInitialization((float*) W1, INPUT_LENGTH, HL_LENGTH);
+	xavierInitialization((float*) W2, HL_LENGTH, HL_LENGTH);
+	xavierInitialization((float*) W3, HL_LENGTH, HL_LENGTH);
+	xavierInitialization((float*) W4, HL_LENGTH, HL_LENGTH);
+	xavierInitialization((float*) W5, HL_LENGTH, OUTPUT_LENGTH);
+	/*
+	normalDistribution(B1, 1, HL_LENGTH);
+	normalDistribution(B2, 1, HL_LENGTH);
+	normalDistribution(B3, 1, HL_LENGTH);
+	normalDistribution(B4, 1, HL_LENGTH);
+	normalDistribution(B5, 1, OUTPUT_LENGTH);
+	*/
+	constantInitialization(B1, 1, HL_LENGTH, 0);
+	constantInitialization(B2, 1, HL_LENGTH, 0);
+	constantInitialization(B3, 1, HL_LENGTH, 0);
+	constantInitialization(B4, 1, HL_LENGTH, 0);
+	constantInitialization(B5, 1, OUTPUT_LENGTH, 0);
+
+}
+
+void weightInitialization_uniform(void) {
+	uniformDistribution((float*) W1, INPUT_LENGTH, HL_LENGTH);
+	uniformDistribution((float*) W2, HL_LENGTH, HL_LENGTH);
+	uniformDistribution((float*) W3, HL_LENGTH, HL_LENGTH);
+	uniformDistribution((float*) W4, HL_LENGTH, HL_LENGTH);
+	uniformDistribution((float*) W5, HL_LENGTH, OUTPUT_LENGTH);
+/*
+	uniformDistribution(B1, 1, HL_LENGTH);
+	uniformDistribution(B2, 1, HL_LENGTH);
+	uniformDistribution(B3, 1, HL_LENGTH);
+	uniformDistribution(B4, 1, HL_LENGTH);
+	uniformDistribution(B5, 1, OUTPUT_LENGTH);
+*/	
+	constantInitialization(B1, 1, HL_LENGTH, 0);
+	constantInitialization(B2, 1, HL_LENGTH, 0);
+	constantInitialization(B3, 1, HL_LENGTH, 0);
+	constantInitialization(B4, 1, HL_LENGTH, 0);
+	constantInitialization(B5, 1, OUTPUT_LENGTH, 0);
+	
+}
 
 void passIL(float x[INPUT_LENGTH], float result[HL_LENGTH]) {
 
@@ -220,7 +233,7 @@ void backHL4(float e[OUTPUT_LENGTH], float iv[HL_LENGTH], float ov[HL_LENGTH], f
 	}
 }
 
-void backHL3(float prevEH[HL_LENGTH], float iv[HL_LENGTH],float ov[HL_LENGTH], float newEH[HL_LENGTH]) {
+void backHL3(float prevEH[HL_LENGTH], float iv[HL_LENGTH], float ov[HL_LENGTH], float newEH[HL_LENGTH]) {
 	
 	for (int i = 0; i < HL_LENGTH; i++) {
 		float tmp = 0;
@@ -246,7 +259,7 @@ void backHL3(float prevEH[HL_LENGTH], float iv[HL_LENGTH],float ov[HL_LENGTH], f
 
 }
 
-void backHL2(float prevEH[HL_LENGTH], float iv[HL_LENGTH],float ov[HL_LENGTH], float newEH[HL_LENGTH]) {
+void backHL2(float prevEH[HL_LENGTH], float iv[HL_LENGTH], float ov[HL_LENGTH], float newEH[HL_LENGTH]) {
 	
 	for (int i = 0; i < HL_LENGTH; i++) {
 		float tmp = 0;
