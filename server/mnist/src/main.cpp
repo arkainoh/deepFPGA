@@ -7,8 +7,8 @@
 #include "mnist_utils/mnist_utils.h"
 #include "mnist_utils/mnist_nn.h"
 #include "network/networking.h"
-
-#define TRAINING_EPOCH 5
+#include "weights/defines.h"
+#define TRAINING_EPOCH 20
 #define TRAINING_BATCH 1000
 
 int main(int argc, char *argv[]) {
@@ -150,8 +150,9 @@ int main(int argc, char *argv[]) {
 			case 2:
 			{
 				correct = 0; total_case = 0; correct_case = 0;
-				weightInitialization();
-				setLearningRate(0.0001);
+				
+				weightInitialization_uniform();
+				setLearningRate(0.001);
 				startTime = clock(); endTime = 0;
 
 				for(int epoch = 0; epoch < TRAINING_EPOCH; epoch++) {
@@ -162,7 +163,6 @@ int main(int argc, char *argv[]) {
 
 					float loss = 0;
 					for(int imgCount = 0; imgCount < MNIST_MAX_TRAINING_IMAGES; imgCount++) {
-														
 						total_case++;
 						MNIST_Image img = getImage(trainingimageFile);
 						MNIST_Label lbl = getLabel(traininglabelFile);
@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
 						pred = 0;
 						
 						for(int i = 1; i < 10; i++) {
-							if(maxVal < intervec5[i]){
+							if(maxVal < intervec5[i]) {
 								maxVal = intervec5[i];
 								pred = i;
 							}
@@ -191,7 +191,7 @@ int main(int argc, char *argv[]) {
 						backHL3(EH1, intervec2, intervec3, EH2);
 						backHL2(EH2, intervec1, intervec2, EH3);
 						backHL1(EH3, img.pixel, intervec1);
-
+						
 						if(pred == lbl)	correct = 1;
 						else correct = 0;
 
@@ -202,9 +202,14 @@ int main(int argc, char *argv[]) {
 						loss += (getLoss(intervec5, lbl) / MNIST_MAX_TRAINING_IMAGES);
 
 						if(imgCount % TRAINING_BATCH == 0) {
+
 							endTime = clock();
 							gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
 							printf("[%d/%d] loss: %f / accuracy: %f / elapsed time: %dm %ds\n", imgCount, MNIST_MAX_TRAINING_IMAGES, loss, (float) correct_case / total_case, (int) gap / 60, (int) gap % 60);
+
+							if ((float) correct_case / total_case > 0.65) {
+								setLearningRate(0.0001);
+							}
 						}
 					}
 					endTime = clock();
