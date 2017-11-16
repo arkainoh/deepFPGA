@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 
-public class InT extends Frame implements MouseMotionListener {
+public class deepFPGA extends Frame implements MouseMotionListener {
 	private static final long serialVersionUID = -2592446912051617238L;
 	private static final int[][] POINT_COLOR = {{0x34, 0x79, 0x34},{0x79, 0xfe, 0x79},{0x34, 0x79, 0x34}};
 	private static final int DATA_SIZE = 28;
@@ -37,10 +37,10 @@ public class InT extends Frame implements MouseMotionListener {
 	private Graphics gImg;
 	private Socket sock;
 	public static void main(String[] args) {
-		new InT("InT");
+		new deepFPGA("InT");
 	}
 	
-	public InT(String title) {
+	public deepFPGA(String title) {
 		super(title);
 		this.x = 0;
 		this.y = 0;
