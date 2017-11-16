@@ -1,6 +1,6 @@
 import numpy as np
 
-m = np.array([[1,2,3],[-4,23,-5],[-1,-2,-3]])
+m = np.random.rand(3, 5)
 
 f = open('test.w', 'w')
 f.write(str(m.shape[0]) + ' ' + str(m.shape[1]) + '\n')
