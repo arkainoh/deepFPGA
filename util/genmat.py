@@ -1,13 +1,16 @@
 import numpy as np
 import sys
 
-m = np.random.rand(int(sys.argv[1]), int(sys.argv[2]))
+def save(mat, filename):
 
-f = open('test.w', 'w')
-f.write(str(m.shape[0]) + ' ' + str(m.shape[1]) + '\n')
-f.close()
+	f = open(filename, 'w')
+	f.write(str(mat.shape[0]) + ' ' + str(mat.shape[1]) + '\n')
+	f.close()
 
-f = open('test.w', 'ab')
-np.savetxt(f, m)
-f.close()
+	f = open(filename, 'ab')
+	np.savetxt(f, mat)
+	f.close()
+
+if __name__ == "__main__":
+	save(np.random.rand(int(sys.argv[1]), int(sys.argv[2])), 'random.mat');
 
