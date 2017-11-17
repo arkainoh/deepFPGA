@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <cstdlib>
-#include "defines.h"
+#include "parameters.h"
 
 
 typedef struct MNIST_ImageFileHeader MNIST_ImageFileHeader;

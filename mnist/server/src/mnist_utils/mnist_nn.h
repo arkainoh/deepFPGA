@@ -4,19 +4,19 @@
 #include <string.h>
 #include <time.h>
 
-#include "../parameter/W1.h"
-#include "../parameter/W2.h"
-#include "../parameter/W3.h"
-#include "../parameter/W4.h"
-#include "../parameter/W5.h"
+#include "../parameters/W1.h"
+#include "../parameters/W2.h"
+#include "../parameters/W3.h"
+#include "../parameters/W4.h"
+#include "../parameters/W5.h"
 
-#include "../parameter/B1.h"
-#include "../parameter/B2.h"
-#include "../parameter/B3.h"
-#include "../parameter/B4.h"
-#include "../parameter/B5.h"
+#include "../parameters/B1.h"
+#include "../parameters/B2.h"
+#include "../parameters/B3.h"
+#include "../parameters/B4.h"
+#include "../parameters/B5.h"
 
-#include "../parameter/parameter.h"
+#include "../parameters/parameters.h"
 
 void getError(float y[OUTPUT_LENGTH], int label, float e[OUTPUT_LENGTH]);
 float getLoss(float y[OUTPUT_LENGTH], int label);

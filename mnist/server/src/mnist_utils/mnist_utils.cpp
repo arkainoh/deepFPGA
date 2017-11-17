@@ -5,7 +5,7 @@
 #include <string>
 #include <math.h>
 #include <random>
-#include "mnist_util.h"
+#include "mnist_utils.h"
 
 
 uint32_t flipBytes(uint32_t n){

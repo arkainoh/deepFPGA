@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <string>
 
-#include "mnist-utils.h"
+#include "mnist_utils.h"
 
 uint32_t flipBytes(uint32_t n){
 

@@ -4,10 +4,10 @@
 #include <unistd.h>
 #include <iostream>
 
-#include "mnist_util/mnist_util.h"
-#include "mnist_util/mnist_nn.h"
+#include "mnist_utils/mnist_utils.h"
+#include "mnist_utils/mnist_nn.h"
 #include "network/networking.h"
-#include "parameter/parameter.h"
+#include "parameters/parameters.h"
 #define TRAINING_EPOCH 20
 #define TRAINING_BATCH 1000
 

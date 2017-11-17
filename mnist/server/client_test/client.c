@@ -1,12 +1,13 @@
 /*
     C ECHO client example using sockets
 */
-#include<stdio.h> //printf
-#include<string.h>    //strlen
-#include<sys/socket.h>    //socket
-#include<arpa/inet.h> //inet_addr
-#include "mnist_utils/mnist-utils.h"
-#include<stdint.h>
+#include <stdio.h> //printf
+#include <string.h>    //strlen
+#include <sys/socket.h>    //socket
+#include <arpa/inet.h> //inet_addr
+#include <unistd.h>
+#include "mnist_utils/mnist_utils.h"
+#include <stdint.h>
 
 #define MAX_DATA 1500
 
