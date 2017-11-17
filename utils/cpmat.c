@@ -1,13 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#define INPUT_LENGTH 784
-#define HL_LENGTH 512
-#define OUTPUT_LENGTH 10
 #define TOKEN_LENGTH 24 // pos num: 24, neg num: 25
 #define BUFFER_SIZE 1024
 
-void copyW(char* infilename, char* outfilename) {
+void copy_matrix(char* infilename, char* outfilename) {
 	char line[BUFFER_SIZE];
 	FILE *fi;
 	FILE *fo;
@@ -65,18 +62,28 @@ void copyW(char* infilename, char* outfilename) {
 			}
 		}
 	}
-	printf("<DONE> # of elements: [%d / %d]\n", token_cnt, rows * cols);
+	printf("Complete.\n# of elements: [%d / %d]\n", token_cnt, rows * cols);
 	fclose(fi);
 	fclose(fo);
 }
 
 int main(int argc, char* argv[]) {
 	if(argc != 3) {
-		puts("<USAGE> copyWeight input_filename output_filename");
+		printf("usage: %s <input> <output>\n\n", argv[0]);
+		printf("arguments:\n");
+		printf("<input>: matrix file (*.mat)\n");
+		printf("         e.g. test.mat\n");
+		printf("         2 3\n");
+		printf("         a11 a12 a13\n");
+		printf("         a21 a22 a23\n");
+		printf("<output>: name of file to which copied values are saved\n");
+		printf("          values are organized like c-style array declaration\n");
+		printf("          e.g. output.c\n");
+		printf("          {{a11,a12,a13},{a21,a22,a23}};\n");
 		exit(1);
 	}
 
-	copyW(argv[1], argv[2]);
+	copy_matrix(argv[1], argv[2]);
 
 	return 0;
 }
