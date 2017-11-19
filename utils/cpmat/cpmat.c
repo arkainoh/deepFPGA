@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "fixedpoint.h"
+#include "../fixedpoint/fixedpoint.h"
 #define TOKEN_LENGTH 24 // pos num: 24, neg num: 25
 #define BUFFER_SIZE 1024
 
