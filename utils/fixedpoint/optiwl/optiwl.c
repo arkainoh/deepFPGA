@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 
 		if(n < 0) n *= (-1);
 
-		if(max < n)	max = n;
+		if(max < n) max = n;
 	}
 
 	fclose(fd);
