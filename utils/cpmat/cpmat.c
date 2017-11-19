@@ -114,11 +114,11 @@ int main(int argc, char* argv[]) {
 	if(argc != 3 && argc != 4) {
 		printf("usage: %s <input> <output> <option>\n\n", argv[0]);
 		printf("arguments:\n");
-		printf("<input>: matrix file (*.mat)\n");
-		printf("         e.g. test.mat\n");
-		printf("         2 3\n");
-		printf("         a11 a12 a13\n");
-		printf("         a21 a22 a23\n");
+		printf("<input>:  matrix file (*.mat)\n");
+		printf("          e.g. test.mat\n");
+		printf("          2 3\n");
+		printf("          a11 a12 a13\n");
+		printf("          a21 a22 a23\n");
 		printf("<output>: name of file to which copied values are saved\n");
 		printf("          values are organized like c-style array declaration\n");
 		printf("          e.g. output.c\n");
