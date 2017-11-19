@@ -1,10 +1,29 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "fixedpoint.h"
 #define TOKEN_LENGTH 24 // pos num: 24, neg num: 25
 #define BUFFER_SIZE 1024
 
-void copy_matrix(char* infilename, char* outfilename) {
+#define MODE_FLOAT32 0
+#define MODE_FIX8 1
+#define MODE_FIX16 2
+#define MODE_EXP 3
+
+// custom function overriding print_binary() from fixedpoint.h
+void fprint_binary(FILE* f, int num, int len) {
+	unsigned int mask = 1 << len - 1;
+	
+	fprintf(f, "0b");
+	while(len--) {
+		if(num & mask) fprintf(f, "1");
+		else fprintf(f, "0");
+
+		mask = mask >> 1;
+	}
+}
+
+void copy_matrix(char* infilename, char* outfilename, int mode, int iwl) {
 	char line[BUFFER_SIZE];
 	FILE *fi;
 	FILE *fo;
@@ -38,7 +57,31 @@ void copy_matrix(char* infilename, char* outfilename) {
 					token[token_cursor] = '\0';
 					token_cursor = 0;
 					token_cnt++;
-					fputs(token, fo);
+					
+					float f;
+					sscanf(token, "%f", &f);
+
+					switch(mode) {
+					case MODE_FLOAT32:
+						fprintf(fo, "%f", f);
+					break;
+					case MODE_FIX8:
+						fix8 f8;
+						f8 = fix(f, 8, iwl);
+						fprint_binary(fo, f8, 8);
+					break;
+					case MODE_FIX16:
+						fix16 f16;
+						f16 = fix(f, 16, iwl);
+						fprint_binary(fo, f16, 16);
+					break;
+					case MODE_EXP:
+					default:
+						fputs(token, fo);
+					break;
+
+					}
+
 					if(token_cnt % cols == 0) {
 
 						if(token_cnt == rows * cols) {
@@ -68,8 +111,8 @@ void copy_matrix(char* infilename, char* outfilename) {
 }
 
 int main(int argc, char* argv[]) {
-	if(argc != 3) {
-		printf("usage: %s <input> <output>\n\n", argv[0]);
+	if(argc != 3 && argc != 4) {
+		printf("usage: %s <input> <output> <option>\n\n", argv[0]);
 		printf("arguments:\n");
 		printf("<input>: matrix file (*.mat)\n");
 		printf("         e.g. test.mat\n");
@@ -80,10 +123,35 @@ int main(int argc, char* argv[]) {
 		printf("          values are organized like c-style array declaration\n");
 		printf("          e.g. output.c\n");
 		printf("          {{a11,a12,a13},{a21,a22,a23}};\n");
+		printf("<option>: -e        use exponential notation (default)\n");
+		printf("                    e.g. -1.234+e01\n");
+		printf("          -float32  use basic float notation\n");
+		printf("                    e.g. 3.141592\n");
+		printf("          -fix8     use 8-bit fixed-point number\n");
+		printf("                    e.g. 0b01010101\n");
+		printf("          -fix16    use 16-bit fixed-point number\n");
+		printf("                    e.g. 0b0101010101010101\n");
 		exit(1);
 	}
 
-	copy_matrix(argv[1], argv[2]);
+	int mode = MODE_EXP;
+	int iwl = 3;
+
+	if(argc == 4) {
+		if(!strcmp(argv[3], "-float32")) {
+			mode = MODE_FLOAT32;
+		} else if(!strcmp(argv[3], "-fix8")) {
+			mode = MODE_FIX8;
+			printf("# of bits allocated for integer (except sign): ");
+			scanf("%d", &iwl);
+		} else if(!strcmp(argv[3], "-fix16")) {
+			mode = MODE_FIX16;
+			printf("# of bits allocated for integer (except sign): ");
+			scanf("%d", &iwl);
+		}
+	}
+
+	copy_matrix(argv[1], argv[2], mode, iwl);
 
 	return 0;
 }
