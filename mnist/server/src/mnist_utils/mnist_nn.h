@@ -4,17 +4,17 @@
 #include <string.h>
 #include <time.h>
 
-#include "../parameters/W1.h"
-#include "../parameters/W2.h"
-#include "../parameters/W3.h"
-#include "../parameters/W4.h"
-#include "../parameters/W5.h"
+#include "../parameters/float/W1.h"
+#include "../parameters/float/W2.h"
+#include "../parameters/float/W3.h"
+#include "../parameters/float/W4.h"
+#include "../parameters/float/W5.h"
 
-#include "../parameters/B1.h"
-#include "../parameters/B2.h"
-#include "../parameters/B3.h"
-#include "../parameters/B4.h"
-#include "../parameters/B5.h"
+#include "../parameters/float/B1.h"
+#include "../parameters/float/B2.h"
+#include "../parameters/float/B3.h"
+#include "../parameters/float/B4.h"
+#include "../parameters/float/B5.h"
 
 #include "../parameters/parameters.h"
 
