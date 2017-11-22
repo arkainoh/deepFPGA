@@ -158,8 +158,8 @@ int main(int argc, char *argv[]) {
 				for(int epoch = 0; epoch < TRAINING_EPOCH; epoch++) {
 					
 					FILE *trainingimageFile, *traininglabelFile;
-					trainingimageFile = openMNISTImageFile("test/train-images-idx3-ubyte");
-					traininglabelFile = openMNISTLabelFile("test/train-labels-idx1-ubyte");
+					trainingimageFile = openMNISTImageFile("../test/train-images-idx3-ubyte");
+					traininglabelFile = openMNISTLabelFile("../test/train-labels-idx1-ubyte");
 
 					float loss = 0;
 					for(int imgCount = 0; imgCount < MNIST_MAX_TRAINING_IMAGES; imgCount++) {
@@ -223,8 +223,8 @@ int main(int argc, char *argv[]) {
 				correct = 0; startTime = 0; endTime = 0; total_case = 0; correct_case = 0;
 
 				FILE *testingimageFile, *testinglabelFile;
-				testingimageFile = openMNISTImageFile("test/t10k-images-idx3-ubyte");
-				testinglabelFile = openMNISTLabelFile("test/t10k-labels-idx1-ubyte");
+				testingimageFile = openMNISTImageFile("../test/t10k-images-idx3-ubyte");
+				testinglabelFile = openMNISTLabelFile("../test/t10k-labels-idx1-ubyte");
 				for(int imgCount = 0; imgCount < MNIST_MAX_TESTING_IMAGES; imgCount++) {
 													
 					total_case++;
