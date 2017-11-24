@@ -1,6 +1,6 @@
 #include "fixedpoint.h"
 
-int fix(float f, int wl, int iwl) {
+int float2fix(float f, int wl, int iwl) {
 	ieee754_float standard;
 	standard.f = f;
 
@@ -24,6 +24,25 @@ int fix(float f, int wl, int iwl) {
 	return ret & filter;
 }
 
+float fix2float(int f, int wl, int iwl) {
+	int fwl = wl - 1 - iwl;
+	int div = 1 << fwl;
+	int sign_filter = 1 << wl - 1;
+	bool neg = false;
+	int filter = (1 << wl) - 1;
+
+	if(f & sign_filter) {
+		f = ~f + 1;
+		neg = true;
+	}
+	
+	float ret = ((float) (f & filter)) / div;
+	
+	if(neg) ret *= (-1);
+	
+	return ret;
+}
+
 void print_binary(int num, int len) {
 	
 	unsigned int mask = 1 << len - 1;
@@ -45,15 +64,17 @@ void printb_fix(int num, int wl, int iwl) {
 	print_binary(num, fwl);
 }
 
-void printd_fix(unsigned int num, int wl, int iwl) {
+void printd_fix(int num, int wl, int iwl) {
 	int fwl = wl - 1 - iwl;
-	if(num >> wl - 1) {
+	int sign_filter = 1 << wl - 1;
+	int int_filter = (1 << iwl) - 1;
+
+	if(num & sign_filter) {
 		printf("-");
 		num = ~(num - 1);
 	}
-	
-	int integer = num >> fwl;
 
+	int integer = (num >> fwl) & int_filter;
 	float fraction = 0.0;
 	float div = 0.5;
 	unsigned int mask = 1 << fwl - 1;
@@ -64,6 +85,7 @@ void printd_fix(unsigned int num, int wl, int iwl) {
 		mask = mask >> 1;
 		div /= 2;
 	}
+
 	printf("%f", integer + fraction);
 
 }
@@ -76,5 +98,20 @@ int mul_fix(int a, int b, int wl, int iwl) {
 int div_fix(int a, int b, int wl, int iwl) {
 	int c = a << wl - 1 - iwl;
 	return c / b;
+}
+
+int optiwl(float floats[], int len) {
+	int max, iwl = 0;
+
+	for(int i = 0; i < len; i++) {
+		int n = floats[i];
+
+		if(n < 0) n *= (-1);
+		if(max < n) max = n;
+	}
+
+	if(max) iwl = log2(max) + 1;
+
+	return iwl;
 }
 
