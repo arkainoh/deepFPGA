@@ -20,6 +20,7 @@
 #include "../../../../../../utils/fixedpoint/fixedpoint.h"
 
 #define IWL 6
+#define MUL_SHIFT 9 // 16 - 1 - IWL
 
 typedef short fix16;
 
