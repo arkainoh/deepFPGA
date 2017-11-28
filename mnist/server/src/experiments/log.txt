@@ -9,3 +9,7 @@ iwl       acc
  6      98.1400%
  7      97.8800%
 
+# elapsed time
+        float32      fix16
+total  46.739273   71.807144
+ avg   00.004674   00.007181

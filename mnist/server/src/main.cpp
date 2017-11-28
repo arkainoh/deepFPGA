@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 	float t[OUTPUT_LENGTH];	
 
 	int correct;
-	float gap;
+	float gap, total_time, avg_time;
 	int pred;
 	time_t startTime, endTime;
 	int total_case;
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 		printf("\r\n\
 				<MENU>\r\n\
 				1: connect to client\n\r\
-				2: train\n\r\
+				2: learn\n\r\
 				3: test\n\r\
 				4: exit\n\r");
 
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
 								printf("pred: %d, actual: %d / ", pred,lbl);
 
 								gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
-								printf("elapsed time: %dm %ds accuracy: %f\n", (int) gap / 60, (int) gap % 60, (float) correct_case / total_case);
+								printf("elapsed time: %fs accuracy: %f\n", gap, (float) correct_case / total_case);
 
 								start = 0;
 								how_much = PACKET_SIZE;
@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
 			}
 			case 2:
 			{
-				correct = 0; total_case = 0; correct_case = 0;
+				correct = 0; total_case = 0; correct_case = 0; total_time = 0; avg_time = 0;
 				
 				weightInitialization_uniform();
 				setLearningRate(0.001);
@@ -205,7 +205,8 @@ int main(int argc, char *argv[]) {
 
 							endTime = clock();
 							gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
-							printf("[%d/%d] loss: %f / accuracy: %f / elapsed time: %dm %ds\n", imgCount, MNIST_MAX_TRAINING_IMAGES, loss, (float) correct_case / total_case, (int) gap / 60, (int) gap % 60);
+							total_time += gap;
+							printf("[%d/%d] loss: %f / accuracy: %f / elapsed time: %fs\n", imgCount, MNIST_MAX_TRAINING_IMAGES, loss, (float) correct_case / total_case, gap);
 
 							if ((float) correct_case / total_case > 0.65) {
 								setLearningRate(0.0001);
@@ -214,19 +215,26 @@ int main(int argc, char *argv[]) {
 					}
 					endTime = clock();
 					gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
-					printf("epoch: %d, loss: %f / accuracy: %f / elapsed time: %dm %ds\n", epoch, loss, (float) correct_case / total_case, (int) gap / 60, (int) gap % 60);
+					total_time += gap;
+					printf("epoch: %d, loss: %f / accuracy: %f / elapsed time: %fs\n", epoch, loss, (float) correct_case / total_case, gap);
 				}
+
+				avg_time = total_time / (MNIST_MAX_TESTING_IMAGES * TRAINING_EPOCH);
+				printf("\nlearning finished\n");
+				printf("total elapsed time: %fs\n", total_time);
+				printf("average elapsed time: %fs\n", avg_time);
 				break;
 			}
 			case 3:
 			{
-				correct = 0; startTime = 0; endTime = 0; total_case = 0; correct_case = 0;
+				correct = 0; startTime = 0; endTime = 0; total_case = 0; correct_case = 0; total_time = 0; avg_time = 0;
 
 				FILE *testingimageFile, *testinglabelFile;
 				testingimageFile = openMNISTImageFile("../data/t10k-images-idx3-ubyte");
 				testinglabelFile = openMNISTLabelFile("../data/t10k-labels-idx1-ubyte");
+				
 				for(int imgCount = 0; imgCount < MNIST_MAX_TESTING_IMAGES; imgCount++) {
-													
+						
 					total_case++;
 					MNIST_Image img = getImage(testingimageFile);
 					MNIST_Label lbl = getLabel(testinglabelFile);
@@ -262,9 +270,16 @@ int main(int argc, char *argv[]) {
 					printf("pred: %d, actual: %d / ", pred, lbl);
 
 					gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
-					printf("elapsed time: %dm %ds accuracy: %f\n", (int) gap / 60, (int) gap % 60, (float) correct_case/total_case);
-
+					printf("elapsed time: %fs accuracy: %f\n", gap, (float) correct_case / total_case);
+					total_time += gap;
 				}
+
+				avg_time = total_time / MNIST_MAX_TESTING_IMAGES;
+				printf("\ntest finished\n");
+				printf("accuracy: %f\n", (float) correct_case / total_case);
+				printf("total elapsed time: %fs\n", total_time);
+				printf("average elapsed time: %fs\n", avg_time);
+
 				break;
 			}
 			case 4:
