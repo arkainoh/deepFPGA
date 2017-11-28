@@ -65,12 +65,16 @@ void passHL4(fix16 x[HL_LENGTH], fix16 result[HL_LENGTH]) {
 }
 
 void passOL(fix16 x[HL_LENGTH], fix16 result[OUTPUT_LENGTH]) {
+	
+	fix16 _result[OUTPUT_LENGTH];
 
-	for(int n = 0; n < OUTPUT_LENGTH; n++) result[n] = B5[n];
+	for(int n = 0; n < OUTPUT_LENGTH; n++) _result[n] = B5[n];
 
 	for(int m = 0; m < HL_LENGTH; m++)
-		for(int n = 0; n < OUTPUT_LENGTH; n++) result[n] += mul_fix(x[m], (fix16)W5[m][n], 16, IWL);
+		for(int n = 0; n < OUTPUT_LENGTH; n++) _result[n] += mul_fix(x[m], (fix16)W5[m][n], 16, IWL);
 
 	// no softmax
+	for(int n = 0; n < OUTPUT_LENGTH; n++)
+		result[n] = _result[n];
 }
 
