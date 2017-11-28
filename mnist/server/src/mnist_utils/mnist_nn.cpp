@@ -96,17 +96,17 @@ void passIL(float x[INPUT_LENGTH], float result[HL_LENGTH]) {
 	float _result[HL_LENGTH];
 
 	for(int n = 0; n < HL_LENGTH; n++) _result[n] = B1[n]; // copy b to result
-
+	
 	for(int m = 0; m < INPUT_LENGTH; m++) // row-wise matmul
-		for(int n = 0; n < HL_LENGTH; n++) _result[n] += (x[m] * W1[m][n]);
+		for(int n = 0; n < HL_LENGTH; n++) {
+			_result[n] += (x[m] * W1[m][n]);
+		}
 
 	for(int n = 0; n < HL_LENGTH; n++) // reLU
 	{
 		if(_result[n] < 0) result[n] = 0;
 		else result[n] = _result[n];
-		
 	}
-
 }
 
 void passHL2(float x[HL_LENGTH], float result[HL_LENGTH]) {
@@ -140,6 +140,7 @@ void passHL3(float x[HL_LENGTH], float result[HL_LENGTH]) {
 	}
 
 }
+
 void passHL4(float x[HL_LENGTH], float result[HL_LENGTH]) {
 
 	float _result[HL_LENGTH];
@@ -156,7 +157,7 @@ void passHL4(float x[HL_LENGTH], float result[HL_LENGTH]) {
 
 }
 
-void passOL(float x[HL_LENGTH], float result[OUTPUT_LENGTH]) {
+void passOL(float x[HL_LENGTH], float result[OUTPUT_LENGTH], bool softmax) {
 
 	float _result[OUTPUT_LENGTH];
 	for(int n = 0; n < OUTPUT_LENGTH; n++) _result[n] = B5[n];
@@ -164,21 +165,28 @@ void passOL(float x[HL_LENGTH], float result[OUTPUT_LENGTH]) {
 	for(int m = 0; m < HL_LENGTH; m++)
 		for(int n = 0; n < OUTPUT_LENGTH; n++) _result[n] += (x[m] * W5[m][n]);
 
-	// softmax
-	float maxValue = _result[0];
-	for(int n = 1; n < OUTPUT_LENGTH; n++) {
-		if(maxValue < _result[n]) {
-			maxValue = _result[n];
+	if(softmax) {
+		// softmax
+		float maxValue = _result[0];
+		for(int n = 1; n < OUTPUT_LENGTH; n++) {
+			if(maxValue < _result[n]) {
+				maxValue = _result[n];
+			}
 		}
-	}
-	
-	float sum = 0;
-	for(int n = 0; n < OUTPUT_LENGTH; n++) {
-			sum += exp(_result[n] - maxValue);
-	}
+		
+		float sum = 0;
+		for(int n = 0; n < OUTPUT_LENGTH; n++) {
+				sum += exp(_result[n] - maxValue);
+		}
 
-	for(int n = 0; n < OUTPUT_LENGTH; n++) {
-		result[n] = exp(_result[n] - maxValue) / sum ;
+		for(int n = 0; n < OUTPUT_LENGTH; n++) {
+			result[n] = exp(_result[n] - maxValue) / sum ;
+		}
+	} else {
+		// no softmax
+		for(int n = 0; n < OUTPUT_LENGTH; n++) {
+			result[n] = _result[n];
+		}
 	}
 }
 

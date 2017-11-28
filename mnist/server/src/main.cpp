@@ -100,11 +100,12 @@ int main(int argc, char *argv[]) {
 								passHL2(intervec1, intervec2);
 								passHL3(intervec2, intervec3);
 								passHL4(intervec3, intervec4);
-								passOL(intervec4, intervec5);
+								passOL(intervec4, intervec5, false);
 								endTime = clock();
 							
 								float maxVal = intervec5[0];
 								pred = 0;
+
 								for(int i = 1; i < 10; i++) {
 									if(maxVal < intervec5[i]) {
 										pred = i;
@@ -171,7 +172,7 @@ int main(int argc, char *argv[]) {
 						passHL2(intervec1, intervec2);
 						passHL3(intervec2, intervec3);
 						passHL4(intervec3, intervec4);
-						passOL(intervec4, intervec5);
+						passOL(intervec4, intervec5, true);
 									
 						float maxVal = intervec5[0];
 						pred = 0;
@@ -244,7 +245,7 @@ int main(int argc, char *argv[]) {
 					passHL2(intervec1, intervec2);
 					passHL3(intervec2, intervec3);
 					passHL4(intervec3, intervec4);
-					passOL(intervec4, intervec5);
+					passOL(intervec4, intervec5, false);
 					endTime = clock();
 								
 					float maxVal = intervec5[0];

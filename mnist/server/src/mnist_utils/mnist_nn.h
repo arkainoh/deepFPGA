@@ -30,7 +30,7 @@ void passIL(float x[INPUT_LENGTH], float result[HL_LENGTH]);
 void passHL2(float x[HL_LENGTH], float result[HL_LENGTH]);
 void passHL3(float x[HL_LENGTH], float result[HL_LENGTH]);
 void passHL4(float x[HL_LENGTH], float result[HL_LENGTH]);
-void passOL(float x[HL_LENGTH],  float result[OUTPUT_LENGTH]);
+void passOL(float x[HL_LENGTH],  float result[OUTPUT_LENGTH], bool softmax);
 
 void xavierInitialization(float *mat, int fan_in, int fan_out);
 void normalDistribution(float *mat, int fan_in, int fan_out);
