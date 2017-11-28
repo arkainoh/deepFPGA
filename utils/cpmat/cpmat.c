@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "../fixedpoint/fixedpoint.h"
 #define TOKEN_LENGTH 24 // pos num: 24, neg num: 25
+#define STRING_LENGTH 32
 #define BUFFER_SIZE 1024
 
 #define MODE_FLOAT32 0
@@ -25,6 +26,8 @@ void fprint_binary(FILE* f, int num, int len) {
 
 void copy_matrix(char* infilename, char* outfilename, int mode, int iwl) {
 	char line[BUFFER_SIZE];
+	char typ[STRING_LENGTH];
+	char var[STRING_LENGTH];
 	FILE *fi;
 	FILE *fo;
 	
@@ -34,13 +37,39 @@ void copy_matrix(char* infilename, char* outfilename, int mode, int iwl) {
 	int token_cnt = 0;
 	int rows;
 	int cols;
-	
+
 	fi = fopen(infilename, "r");
 	fo = fopen(outfilename, "w");
+	
+	printf("type: ");
+	fgets(typ, STRING_LENGTH - 1, stdin);
+
+	int len = strlen(typ);
+	if((len > 0) && (typ[len - 1] == '\n'))
+		typ[len - 1] = '\0';
+
+	printf("variable name: ");
+	fgets(var, STRING_LENGTH - 1, stdin);
+
+	len = strlen(var);
+	if((len > 0) && (var[len - 1] == '\n'))
+		var[len - 1] = '\0';
+
+	fprintf(fo, "%s %s", typ, var);
+
 	fgets(line, sizeof(line), fi);
 	sscanf(line, "%d %d", &rows, &cols);
-	
-	fprintf(fo, "{{");
+
+	if(rows == 1 || cols == 1) {
+		if(rows == 1 && cols == 1) {
+			fprintf(fo, " = ");
+		} else {
+			fprintf(fo, "[%d] = {", rows * cols);
+		}
+	} else {
+		fprintf(fo, "[%d][%d] = {{", rows, cols);
+	}
+
 	while(fgets(line, sizeof(line), fi)) {
 		int off = 0;
 
@@ -67,25 +96,32 @@ void copy_matrix(char* infilename, char* outfilename, int mode, int iwl) {
 					break;
 					case MODE_FIX8:
 						fix8 f8;
-						f8 = fix(f, 8, iwl);
+						f8 = float2fix(f, 8, iwl);
 						fprint_binary(fo, f8, 8);
 					break;
 					case MODE_FIX16:
 						fix16 f16;
-						f16 = fix(f, 16, iwl);
+						f16 = float2fix(f, 16, iwl);
 						fprint_binary(fo, f16, 16);
 					break;
 					case MODE_EXP:
 					default:
 						fputs(token, fo);
 					break;
-
 					}
 
 					if(token_cnt % cols == 0) {
 
 						if(token_cnt == rows * cols) {
-							fprintf(fo, "}};");
+							if(rows == 1 || cols == 1) {
+								if(rows == 1 && cols == 1) {
+									fprintf(fo, ";");
+								} else {
+									fprintf(fo, "};");
+								}
+							} else {
+								fprintf(fo, "}};");
+							}
 						} else {
 							fprintf(fo, "}, {");
 						}
@@ -93,7 +129,6 @@ void copy_matrix(char* infilename, char* outfilename, int mode, int iwl) {
 					} else {
 						fprintf(fo, ", ");
 					}
-
 				}
 
 				if(line[i] == '\0') off = 1;
