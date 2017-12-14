@@ -37,7 +37,7 @@ int main() {
 	FILE *testingimageFile, *testinglabelFile;
 	testingimageFile = openMNISTImageFile("../../../../data/t10k-images-idx3-ubyte");
 	testinglabelFile = openMNISTLabelFile("../../../../data/t10k-labels-idx1-ubyte");
-	for(int imgCount = 0; imgCount < MNIST_MAX_TESTING_IMAGES; imgCount++) {
+	for(int imgCount = 0; imgCount < N_TEST_IMAGES; imgCount++) {
 
 		total_case++;
 		getImage_fix16(testingimageFile, pixels, IWL);
@@ -79,7 +79,7 @@ int main() {
 
 	}
 
-	avg_time = total_time / MNIST_MAX_TESTING_IMAGES;
+	avg_time = total_time / N_TEST_IMAGES;
 	printf("\ntest finished\n");
 	printf("accuracy: %f\n", (float) correct_case / total_case);
 	printf("total elapsed time: %fs\n", total_time);
