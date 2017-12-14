@@ -11,6 +11,10 @@ void setLearningRate(float val) {
 	learning_rate = val;
 }
 
+float getLearningRate() {
+	return learning_rate;
+}
+
 void xavierInitialization(float* mat, int fan_in, int fan_out) {
 	std::random_device rd;
 	std::mt19937 gen(rd());
@@ -48,20 +52,14 @@ void constantInitialization(float *mat, int fan_in, int fan_out, float val) {
 	}
 }
 
-void weightInitialization_xavier(void) {
+void parameterInitialization_xavier(void) {
 	
 	xavierInitialization((float*) W1, INPUT_LENGTH, HL_LENGTH);
 	xavierInitialization((float*) W2, HL_LENGTH, HL_LENGTH);
 	xavierInitialization((float*) W3, HL_LENGTH, HL_LENGTH);
 	xavierInitialization((float*) W4, HL_LENGTH, HL_LENGTH);
 	xavierInitialization((float*) W5, HL_LENGTH, OUTPUT_LENGTH);
-	/*
-	normalDistribution(B1, 1, HL_LENGTH);
-	normalDistribution(B2, 1, HL_LENGTH);
-	normalDistribution(B3, 1, HL_LENGTH);
-	normalDistribution(B4, 1, HL_LENGTH);
-	normalDistribution(B5, 1, OUTPUT_LENGTH);
-	*/
+	
 	constantInitialization(B1, 1, HL_LENGTH, 0);
 	constantInitialization(B2, 1, HL_LENGTH, 0);
 	constantInitialization(B3, 1, HL_LENGTH, 0);
@@ -70,19 +68,13 @@ void weightInitialization_xavier(void) {
 
 }
 
-void weightInitialization_uniform(void) {
+void parameterInitialization_uniform(void) {
 	uniformDistribution((float*) W1, INPUT_LENGTH, HL_LENGTH);
 	uniformDistribution((float*) W2, HL_LENGTH, HL_LENGTH);
 	uniformDistribution((float*) W3, HL_LENGTH, HL_LENGTH);
 	uniformDistribution((float*) W4, HL_LENGTH, HL_LENGTH);
 	uniformDistribution((float*) W5, HL_LENGTH, OUTPUT_LENGTH);
-/*
-	uniformDistribution(B1, 1, HL_LENGTH);
-	uniformDistribution(B2, 1, HL_LENGTH);
-	uniformDistribution(B3, 1, HL_LENGTH);
-	uniformDistribution(B4, 1, HL_LENGTH);
-	uniformDistribution(B5, 1, OUTPUT_LENGTH);
-*/	
+	
 	constantInitialization(B1, 1, HL_LENGTH, 0);
 	constantInitialization(B2, 1, HL_LENGTH, 0);
 	constantInitialization(B3, 1, HL_LENGTH, 0);
@@ -157,37 +149,35 @@ void passHL4(float x[HL_LENGTH], float result[HL_LENGTH]) {
 
 }
 
-void passOL(float x[HL_LENGTH], float result[OUTPUT_LENGTH], bool softmax) {
+void passOL(float x[HL_LENGTH], float result[OUTPUT_LENGTH]) {
 
-	float _result[OUTPUT_LENGTH];
-	for(int n = 0; n < OUTPUT_LENGTH; n++) _result[n] = B5[n];
+	for(int n = 0; n < OUTPUT_LENGTH; n++) result[n] = B5[n];
 
 	for(int m = 0; m < HL_LENGTH; m++)
-		for(int n = 0; n < OUTPUT_LENGTH; n++) _result[n] += (x[m] * W5[m][n]);
+		for(int n = 0; n < OUTPUT_LENGTH; n++) result[n] += (x[m] * W5[m][n]);
 
-	if(softmax) {
-		// softmax
-		float maxValue = _result[0];
-		for(int n = 1; n < OUTPUT_LENGTH; n++) {
-			if(maxValue < _result[n]) {
-				maxValue = _result[n];
-			}
-		}
-		
-		float sum = 0;
-		for(int n = 0; n < OUTPUT_LENGTH; n++) {
-				sum += exp(_result[n] - maxValue);
-		}
+}
 
-		for(int n = 0; n < OUTPUT_LENGTH; n++) {
-			result[n] = exp(_result[n] - maxValue) / sum ;
-		}
-	} else {
-		// no softmax
-		for(int n = 0; n < OUTPUT_LENGTH; n++) {
-			result[n] = _result[n];
+void softmax(float x[OUTPUT_LENGTH], float result[OUTPUT_LENGTH]) {
+	
+	float _result[OUTPUT_LENGTH];
+	float maxValue = x[0];
+	for(int n = 1; n < OUTPUT_LENGTH; n++) {
+		if(maxValue < x[n]) {
+			maxValue = x[n];
 		}
 	}
+	
+	float sum = 0;
+	for(int n = 0; n < OUTPUT_LENGTH; n++) {
+		_result[n] = exp(x[n] - maxValue);	
+		sum += _result[n];
+	}
+
+	for(int n = 0; n < OUTPUT_LENGTH; n++) {
+		result[n] = _result[n] / sum ;
+	}
+
 }
 
 void getError(float y[OUTPUT_LENGTH], int label, float e[OUTPUT_LENGTH]) {

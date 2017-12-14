@@ -30,14 +30,16 @@ void passIL(float x[INPUT_LENGTH], float result[HL_LENGTH]);
 void passHL2(float x[HL_LENGTH], float result[HL_LENGTH]);
 void passHL3(float x[HL_LENGTH], float result[HL_LENGTH]);
 void passHL4(float x[HL_LENGTH], float result[HL_LENGTH]);
-void passOL(float x[HL_LENGTH],  float result[OUTPUT_LENGTH], bool softmax);
+void passOL(float x[HL_LENGTH],  float result[OUTPUT_LENGTH]);
+void softmax(float x[OUTPUT_LENGTH], float result[OUTPUT_LENGTH]);
 
 void xavierInitialization(float *mat, int fan_in, int fan_out);
 void normalDistribution(float *mat, int fan_in, int fan_out);
 void uniformDistribution(float *mat, int fan_in, int fan_out);
 void constantInitialization(float *mat, int fan_in, int fan_out, float val);
-void weightInitialization_xavier(void);
-void weightInitialization_uniform(void);
+void parameterInitialization_xavier(void);
+void parameterInitialization_uniform(void);
 void setLearningRate(float val);
+float getLearningRate();
 
 #endif
