@@ -8,8 +8,11 @@
 #include "mnist_utils/mnist_nn.h"
 #include "network/networking.h"
 #include "parameters/parameters.h"
+
+#define DATA_PATH "../data/"
+
 #define TRAINING_EPOCH 20
-#define TRAINING_BATCH 1000
+#define TRAINING_BATCH 10000
 
 int main(int argc, char *argv[]) {
 
@@ -18,6 +21,7 @@ int main(int argc, char *argv[]) {
 	float intervec3[HL_LENGTH];
 	float intervec4[HL_LENGTH];
 	float intervec5[OUTPUT_LENGTH];
+	float est[OUTPUT_LENGTH];
 
 	float EH1[HL_LENGTH];
 	float EH2[HL_LENGTH];
@@ -33,7 +37,7 @@ int main(int argc, char *argv[]) {
 	int total_case;
 	int correct_case;
 
-	while (true)
+	while(true)
 	{
 		printf("\r\n\
 				<MENU>\r\n\
@@ -92,7 +96,6 @@ int main(int argc, char *argv[]) {
 								}
 
 								lbl = (uint8_t) pkt->head.ID;
-								// showImg(img.pixcel);
 
 								total_case++;
 								startTime = clock();
@@ -100,13 +103,13 @@ int main(int argc, char *argv[]) {
 								passHL2(intervec1, intervec2);
 								passHL3(intervec2, intervec3);
 								passHL4(intervec3, intervec4);
-								passOL(intervec4, intervec5, false);
+								passOL(intervec4, intervec5);
 								endTime = clock();
 							
 								float maxVal = intervec5[0];
 								pred = 0;
 
-								for(int i = 1; i < 10; i++) {
+								for(int i = 1; i < OUTPUT_LENGTH; i++) {
 									if(maxVal < intervec5[i]) {
 										pred = i;
 										maxVal = intervec5[i];
@@ -150,20 +153,22 @@ int main(int argc, char *argv[]) {
 			}
 			case 2:
 			{
-				correct = 0; total_case = 0; correct_case = 0; total_time = 0; avg_time = 0;
+				correct = 0; total_time = 0; avg_time = 0;
 				
-				weightInitialization_uniform();
-				setLearningRate(0.001);
+				parameterInitialization_uniform();
+				setLearningRate(0.0001);
 				startTime = clock(); endTime = 0;
-
+				printf("learning started\n");
 				for(int epoch = 0; epoch < TRAINING_EPOCH; epoch++) {
-					
+					time_t epoch_startTime = clock();
 					FILE *trainingimageFile, *traininglabelFile;
 					trainingimageFile = openMNISTImageFile("../data/train-images-idx3-ubyte");
 					traininglabelFile = openMNISTLabelFile("../data/train-labels-idx1-ubyte");
-
+					correct_case = total_case = 0;
 					float loss = 0;
-					for(int imgCount = 0; imgCount < MNIST_MAX_TRAINING_IMAGES; imgCount++) {
+					float batch_loss = 0;
+
+					for(int imgCount = 0; imgCount < N_TRAIN_IMAGES - N_TEST_IMAGES; imgCount++) {
 						total_case++;
 						MNIST_Image img = getImage(trainingimageFile);
 						MNIST_Label lbl = getLabel(traininglabelFile);
@@ -172,22 +177,23 @@ int main(int argc, char *argv[]) {
 						passHL2(intervec1, intervec2);
 						passHL3(intervec2, intervec3);
 						passHL4(intervec3, intervec4);
-						passOL(intervec4, intervec5, true);
+						passOL(intervec4, intervec5);
+						softmax(intervec5, est);
 									
-						float maxVal = intervec5[0];
+						float maxVal = est[0];
 						pred = 0;
 						
-						for(int i = 1; i < 10; i++) {
-							if(maxVal < intervec5[i]) {
-								maxVal = intervec5[i];
+						for(int i = 1; i < OUTPUT_LENGTH; i++) {
+							if(maxVal < est[i]) {
+								maxVal = est[i];
 								pred = i;
 							}
 						}
 
-						getError(intervec5,(int) lbl, e);
+						getError(est, (int)lbl, e);
 						
 						// backpropagation
-						backOL(e, intervec4, intervec5);  
+						backOL(e, intervec4, est);  
 						backHL4(e, intervec3, intervec4, EH1);
 						backHL3(EH1, intervec2, intervec3, EH2);
 						backHL2(EH2, intervec1, intervec2, EH3);
@@ -200,30 +206,103 @@ int main(int argc, char *argv[]) {
 							correct_case++;
 						}
 
-						loss += (getLoss(intervec5, lbl) / MNIST_MAX_TRAINING_IMAGES);
-
-						if(imgCount % TRAINING_BATCH == 0) {
-
-							endTime = clock();
-							gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
-							total_time += gap;
-							printf("[%d/%d] loss: %f / accuracy: %f / elapsed time: %fs\n", imgCount, MNIST_MAX_TRAINING_IMAGES, loss, (float) correct_case / total_case, gap);
-
-							if ((float) correct_case / total_case > 0.65) {
+						loss += (getLoss(est, lbl) / (N_TRAIN_IMAGES - N_TEST_IMAGES));
+						batch_loss += (getLoss(est, lbl) / TRAINING_BATCH);
+						/*
+						if(imgCount % 1000 == 0) {
+							if ((float) correct_case / total_case > 0.65 && getLearningRate() == 0.001) {
 								setLearningRate(0.0001);
 							}
 						}
+						*/
+						if((imgCount + 1) % TRAINING_BATCH == 0) {
+							endTime = clock();
+							gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
+							printf("[%d/%d] loss: %f / accuracy: %f / elapsed time: %fs\n", imgCount + 1, N_TRAIN_IMAGES - N_TEST_IMAGES, batch_loss, (float) correct_case / total_case, gap);
+							batch_loss = 0;
+						}
+					} // epoch end
+					
+					// validation
+					correct_case = total_case = 0;
+					for(int imgCount = 0; imgCount < N_TEST_IMAGES; imgCount++) {
+						total_case++;
+						MNIST_Image img = getImage(trainingimageFile);
+						MNIST_Label lbl = getLabel(traininglabelFile);
+
+						passIL(img.pixel, intervec1);
+						passHL2(intervec1, intervec2);
+						passHL3(intervec2, intervec3);
+						passHL4(intervec3, intervec4);
+						passOL(intervec4, intervec5);
+									
+						float maxVal = intervec5[0];
+						pred = 0;
+						
+						for(int i = 1; i < OUTPUT_LENGTH; i++)	{
+							if(maxVal < intervec5[i]) {
+								maxVal = intervec5[i];
+								pred = i;
+							}
+						}
+
+						if(pred == lbl)	correct_case++;
 					}
+
 					endTime = clock();
-					gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
+					gap = (float) (endTime - epoch_startTime) / CLOCKS_PER_SEC;
 					total_time += gap;
 					printf("epoch: %d, loss: %f / accuracy: %f / elapsed time: %fs\n", epoch, loss, (float) correct_case / total_case, gap);
+					
+					if((float)correct_case / total_case > 0.95) {
+						setLearningRate(0.00001);
+					}
 				}
 
-				avg_time = total_time / (MNIST_MAX_TESTING_IMAGES * TRAINING_EPOCH);
+				avg_time = total_time / TRAINING_EPOCH;
+
+				// test
+				correct_case = total_case = 0;
+				
+				FILE *testingimageFile, *testinglabelFile;
+				testingimageFile = openMNISTImageFile("../data/t10k-images-idx3-ubyte");
+				testinglabelFile = openMNISTLabelFile("../data/t10k-labels-idx1-ubyte");
+				
+				for(int imgCount = 0; imgCount < N_TEST_IMAGES; imgCount++) {
+					total_case++;
+					
+					MNIST_Image img = getImage(testingimageFile);
+					MNIST_Label lbl = getLabel(testinglabelFile);
+
+					startTime = clock();
+					passIL(img.pixel, intervec1);
+					passHL2(intervec1, intervec2);
+					passHL3(intervec2, intervec3);
+					passHL4(intervec3, intervec4);
+					passOL(intervec4, intervec5);
+					endTime = clock();
+								
+					float maxVal = intervec5[0];
+					pred = 0;
+					
+					for(int i = 1; i < OUTPUT_LENGTH; i++)	{
+						if(maxVal < intervec5[i]) {
+							maxVal = intervec5[i];
+							pred = i;
+						}
+					}
+
+					if(pred == lbl)	correct_case++;
+				}
+				
+				endTime = clock();
+				gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
+				
 				printf("\nlearning finished\n");
-				printf("total elapsed time: %fs\n", total_time);
-				printf("average elapsed time: %fs\n", avg_time);
+				printf("accuracy: %f\n", (float) correct_case / total_case);
+				printf("total elapsed time: %fs\n", gap);
+				printf("average elapsed time per epoch: %fs\n", avg_time);
+				
 				break;
 			}
 			case 3:
@@ -234,7 +313,7 @@ int main(int argc, char *argv[]) {
 				testingimageFile = openMNISTImageFile("../data/t10k-images-idx3-ubyte");
 				testinglabelFile = openMNISTLabelFile("../data/t10k-labels-idx1-ubyte");
 				
-				for(int imgCount = 0; imgCount < MNIST_MAX_TESTING_IMAGES; imgCount++) {
+				for(int imgCount = 0; imgCount < N_TEST_IMAGES; imgCount++) {
 						
 					total_case++;
 					MNIST_Image img = getImage(testingimageFile);
@@ -245,13 +324,13 @@ int main(int argc, char *argv[]) {
 					passHL2(intervec1, intervec2);
 					passHL3(intervec2, intervec3);
 					passHL4(intervec3, intervec4);
-					passOL(intervec4, intervec5, false);
+					passOL(intervec4, intervec5);
 					endTime = clock();
 								
 					float maxVal = intervec5[0];
 					pred = 0;
 					
-					for(int i = 1; i < 10; i++)	{
+					for(int i = 1; i < OUTPUT_LENGTH; i++)	{
 						if(maxVal < intervec5[i]) {
 							maxVal = intervec5[i];
 							pred = i;
@@ -275,11 +354,11 @@ int main(int argc, char *argv[]) {
 					total_time += gap;
 				}
 
-				avg_time = total_time / MNIST_MAX_TESTING_IMAGES;
+				avg_time = total_time / N_TEST_IMAGES;
 				printf("\ntest finished\n");
 				printf("accuracy: %f\n", (float) correct_case / total_case);
 				printf("total elapsed time: %fs\n", total_time);
-				printf("average elapsed time: %fs\n", avg_time);
+				printf("average elapsed time per image: %fs\n", avg_time);
 
 				break;
 			}
