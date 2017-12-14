@@ -1,12 +1,4 @@
-#include <stdint.h>
-#include <stdio.h>
-#include <iostream>
-#include <cstdlib>
-#include <string>
-#include <math.h>
-#include <random>
 #include "mnist_utils.h"
-
 
 uint32_t flipBytes(uint32_t n){
 
@@ -72,10 +64,10 @@ void readLabelFileHeader(FILE *imageFile, MNIST_LabelFileHeader *lfh) {
 FILE *openMNISTImageFile(std::string fileName) {
 
     FILE *imageFile;
-    imageFile = fopen (fileName.c_str(), "rb");
+    imageFile = fopen(fileName.c_str(), "rb");
     if (imageFile == NULL) {
         printf("file not found: %s\n", fileName.c_str());
-        exit(0);
+        exit(1);
     }
 
     MNIST_ImageFileHeader imageFileHeader;
@@ -93,10 +85,10 @@ FILE *openMNISTImageFile(std::string fileName) {
 FILE *openMNISTLabelFile(std::string fileName){
 
     FILE *labelFile;
-    labelFile = fopen (fileName.c_str(), "rb");
+    labelFile = fopen(fileName.c_str(), "rb");
     if (labelFile == NULL) {
         printf("file not found: %s\n", fileName.c_str());
-        exit(0);
+        exit(1);
     }
 
     MNIST_LabelFileHeader labelFileHeader;
@@ -109,39 +101,43 @@ FILE *openMNISTLabelFile(std::string fileName){
  * @details Returns the next image in the given MNIST image file
  */
 
-MNIST_Image getImage_net(char arr[]) {
+MNIST_Image getImage(float arr[]) {
     MNIST_Image img;
 
-    //result = fread(&img, sizeof(img), 1, imageFile);
-    for(int i = 1 ; i <INPUT_LENGTH + 1;i++) {
-    	img.pixel[i] = (float) arr[i];
+    for(int i = 0; i < INPUT_LENGTH; i++) {
+    	img.pixel[i] = arr[i];
     }
 
     return img;
 }
 
-MNIST_Label getLabel_net(char arr[]) {
-
-    MNIST_Label lbl;
-    size_t result;
-    result = arr[0];
-    if (result != 1) {
-        printf("\nerror occurred reading LABEL file\n");
-        exit(1);
-    }
-
-    return lbl;
-}
+/**
+ * @details Returns the next image in the given MNIST image file
+ */
 
 MNIST_Image getImage(FILE *imageFile) {
 
     MNIST_Image img;
-
-    //result = fread(&img, sizeof(img), 1, imageFile);
-    for(int i =0 ; i <INPUT_LENGTH;i++) {
-    	img.pixel[i] = (float) ((float) fgetc(imageFile)) / 255;
+		
+    for(int i = 0; i < INPUT_LENGTH; i++) {
+    	img.pixel[i] = (float)((float)fgetc(imageFile)) / 255;
     }
+    
+		return img;
+}
 
+MNIST_Image getImage(FILE *imageFile, int index) {
+
+    MNIST_Image img;
+		
+		int init_pos = ftell(imageFile);
+		fseek(imageFile, INPUT_LENGTH * index, SEEK_CUR);
+
+    for(int i = 0; i < INPUT_LENGTH; i++) {
+    	img.pixel[i] = (float)((float)fgetc(imageFile)) / 255;
+    }
+		
+		fseek(imageFile, init_pos, SEEK_SET);
     return img;
 }
 
@@ -154,11 +150,29 @@ MNIST_Label getLabel(FILE *labelFile) {
     MNIST_Label lbl;
     size_t result;
     result = fread(&lbl, sizeof(lbl), 1, labelFile);
-    if (result!=1) {
+    if (result != 1) {
         printf("\nError when reading LABEL file! Abort!\n");
         exit(1);
     }
 
+    return lbl;
+}
+
+MNIST_Label getLabel(FILE *labelFile, int index) {
+
+    MNIST_Label lbl;
+    size_t result;
+
+		int init_pos = ftell(labelFile);
+		fseek(labelFile, index, SEEK_CUR);
+
+    result = fread(&lbl, sizeof(lbl), 1, labelFile);
+    if (result != 1) {
+        printf("\nError when reading LABEL file! Abort!\n");
+        exit(1);
+    }
+		
+		fseek(labelFile, init_pos, SEEK_SET);
     return lbl;
 }
 
@@ -236,10 +250,10 @@ void loadParam(char* filename, float* mat) {
 //	return token_cnt;
 //}
 
-void showImg(float x[INPUT_LENGTH]) {
+void showImage(MNIST_Image* img) {
 
 	for(int i = 0; i < INPUT_LENGTH; i++) {
-		if(x[i] > 0) printf("X ");
+		if(img->pixel[i] > 0) printf("X ");
 		else printf("  ");
 
 		if(i % 28 == 0) {

@@ -2,7 +2,20 @@
 #include <stdio.h>
 #include <iostream>
 #include <cstdlib>
+#include <string>
+#include <math.h>
+#include <random>
 #include "../parameters/parameters.h"
+
+#define TRAIN_IMAGES "train-images-idx3-ubyte"
+#define TRAIN_LABELS "train-labels-idx1-ubyte"
+#define TEST_IMAGES "t10k-images-idx3-ubyte"
+#define TEST_LABELS "t10k-labels-idx1-ubyte"
+
+#define N_TRAIN_IMAGES 60000 // number of images + labels in the TRAIN file/s
+#define N_TEST_IMAGES 10000 // number of images + labels in the TEST file/s
+#define IMAGE_WIDTH 28 // image width in pixel
+#define IMAGE_HEIGHT 28 // image height in pixel
 
 typedef struct MNIST_ImageFileHeader MNIST_ImageFileHeader;
 typedef struct MNIST_LabelFileHeader MNIST_LabelFileHeader;
@@ -11,7 +24,7 @@ typedef struct MNIST_Image MNIST_Image;
 typedef uint8_t MNIST_Label;
 
 struct MNIST_Image {
-    float pixel[MNIST_IMG_WIDTH*MNIST_IMG_HEIGHT];
+    float pixel[IMAGE_WIDTH * IMAGE_HEIGHT];
 };
 
 /**
@@ -44,12 +57,12 @@ struct MNIST_LabelFileHeader {
 
 void loadParam(char* filename, float* mat);
 //int loadImg(char* filename, float x[INPUT_LENGTH]);
-void showImg(float x[INPUT_LENGTH]);
+void showImage(MNIST_Image* img);
 float evalToken(char* token);
 FILE *openMNISTImageFile(std::string fileName);
 FILE *openMNISTLabelFile(std::string fileName);
 MNIST_Image getImage(FILE *imageFile);
 MNIST_Label getLabel(FILE *labelFile);
-MNIST_Label getLabel_net(char arr[]);
-MNIST_Image getImage_net(char arr[]);
-
+MNIST_Image getImage(float arr[]);
+MNIST_Image getImage(FILE *imageFile, int index);
+MNIST_Label getLabel(FILE *imageFile, int index);
