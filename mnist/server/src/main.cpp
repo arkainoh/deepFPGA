@@ -220,6 +220,7 @@ int main(int argc, char *argv[]) {
 							gap = (float) (endTime - startTime) / CLOCKS_PER_SEC;
 							printf("[%d/%d] loss: %f / accuracy: %f / elapsed time: %fs\n", imgCount + 1, N_TRAIN_IMAGES - N_TEST_IMAGES, batch_loss, (float) correct_case / total_case, gap);
 							batch_loss = 0;
+							correct_case = total_case = 0;
 						}
 					} // epoch end
 					
