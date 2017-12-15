@@ -3,6 +3,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <iostream>
+#include <stdlib.h>
 
 #include "mnist_utils/mnist_utils.h"
 #include "mnist_utils/mnist_nn.h"
@@ -13,6 +14,16 @@
 
 #define TRAINING_EPOCH 20
 #define TRAINING_BATCH 10000
+
+void shuffle(int* arr, int N) {
+	srand(time(NULL));
+	for(int i = N - 1; i > 0; i--) {
+		int j = rand() % (i + 1);
+		int tmp = arr[i];
+		arr[i] = arr[j];
+		arr[j] = tmp;
+	}
+}
 
 int main(int argc, char *argv[]) {
 
@@ -153,13 +164,22 @@ int main(int argc, char *argv[]) {
 			}
 			case 2:
 			{
-				correct = 0; total_time = 0; avg_time = 0;
+				// init image indices for SGD
+				int indices[N_TRAIN_IMAGES];
+				for(int i = 0; i < N_TRAIN_IMAGES; i++) {
+					indices[i] = i;
+				}
 				
+				correct = 0; total_time = 0; avg_time = 0;
 				parameterInitialization_uniform();
 				setLearningRate(0.0001);
 				startTime = clock(); endTime = 0;
+
 				printf("learning started\n");
 				for(int epoch = 0; epoch < TRAINING_EPOCH; epoch++) {
+
+					shuffle(indices, N_TRAIN_IMAGES);
+
 					time_t epoch_startTime = clock();
 					FILE *trainingimageFile, *traininglabelFile;
 					trainingimageFile = openMNISTImageFile("../data/train-images-idx3-ubyte");
@@ -170,8 +190,8 @@ int main(int argc, char *argv[]) {
 
 					for(int imgCount = 0; imgCount < N_TRAIN_IMAGES - N_TEST_IMAGES; imgCount++) {
 						total_case++;
-						MNIST_Image img = getImage(trainingimageFile);
-						MNIST_Label lbl = getLabel(traininglabelFile);
+						MNIST_Image img = getImage(trainingimageFile, indices[imgCount]);
+						MNIST_Label lbl = getLabel(traininglabelFile, indices[imgCount]);
 
 						passIL(img.pixel, intervec1);
 						passHL2(intervec1, intervec2);
@@ -226,10 +246,10 @@ int main(int argc, char *argv[]) {
 					
 					// validation
 					correct_case = total_case = 0;
-					for(int imgCount = 0; imgCount < N_TEST_IMAGES; imgCount++) {
+					for(int imgCount = N_TRAIN_IMAGES - N_TEST_IMAGES; imgCount < N_TRAIN_IMAGES; imgCount++) {
 						total_case++;
-						MNIST_Image img = getImage(trainingimageFile);
-						MNIST_Label lbl = getLabel(traininglabelFile);
+						MNIST_Image img = getImage(trainingimageFile, indices[imgCount]);
+						MNIST_Label lbl = getLabel(traininglabelFile, indices[imgCount]);
 
 						passIL(img.pixel, intervec1);
 						passHL2(intervec1, intervec2);
